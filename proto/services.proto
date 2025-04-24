@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "/proto";
+
+service Manager{
+  rpc Register(AuthenticationRequest) returns (AuthenticationResponse) {}
+  rpc Login(AuthenticationRequest) returns (AuthenticationResponse) {}
+
+  rpc ChangeRole(ChangeRoleRequest) returns (Empty) {}
+  rpc GetProfile(ID) returns (GetProfileResponse) {}
+  rpc GetProfiles(Empty) returns (GetProfilesResponse) {}
+  rpc GetStatsRequest(ID) returns (GetStatsResponse) {}
+
+  rpc GetQuestions(GetQuestionsRequest) returns (GetQuestionsResponse) {}
+  rpc GetQuestion(ID) returns (GetQuestionResponse) {}
+  rpc Submit(SubmitRequest) returns (Empty) {}
+  rpc GetSubmissions(GetSubmissionsRequest) returns (GetSubmissionsResponse) {}
+  rpc CreateQuestion(Question) returns (ID) {}
+  rpc EditQuestion(Question) returns (Empty) {}
+  rpc ChangeQuestionState(ChangeQuestionStateRequest) returns (Empty) {}
+
+  rpc UpdateSubmission(Submission) returns (Empty) {}
+}
+
+message AuthenticationRequest{
+  string username = 1;
+  string password = 2;
+}
+
+message AuthenticationResponse {
+  string value = 1;
+}
+
+enum Role {
+  ROLE_UNKNOWN = 0;
+  ROLE_MEMBER = 1;
+  ROLE_ADMIN = 2;
+}
+
+message ChangeRoleRequest {
+  string username = 1;
+  Role role = 2;
+}
+
+message Empty {}
+
+message GetProfileResponse {
+  string username = 1;
+}
+
+message GetProfilesResponse {
+  repeated string usernames = 1;
+}
+
+message GetStatsResponse {
+  int64 tried_questions = 1;
+  int64 solved_questions = 2;
+}
+
+enum QuestionState {
+  QUESTION_STATE_UNKNOWN = 0;
+  QUESTION_STATE_DRAFT = 1;
+  QUESTION_STATE_PUBLISHED = 2;
+}
+
+message Question {
+  optional string id = 1;
+  string title = 2;
+  string statement = 3;
+  Limitations limitations = 4;
+  optional string input = 5;
+  optional string output = 6;
+  QuestionState state = 7;
+}
+
+message Limitations {
+  int64 duration = 1; // milliseconds
+  int64 memory = 2; // mega bytes
+}
+
+message Filter{
+  string field = 1;
+  string value = 2;
+}
+
+message GetQuestionsRequest {
+  repeated Filter filters = 1;
+}
+
+message GetQuestionsResponse {
+  repeated Question questions = 1;
+}
+
+message GetQuestionResponse {
+  Question question = 1;
+}
+
+message SubmitRequest {
+  Submission submission = 1;
+}
+
+message GetSubmissionsRequest {
+  repeated Filter filters = 1;
+}
+
+enum SubmissionState {
+  SUBMISSION_STATE_UNKNOWN = 0;
+  SUBMISSION_STATE_PENDING = 1;
+  SUBMISSION_STATE_JUDGING = 2;
+  SUBMISSION_STATE_OK = 3;
+  SUBMISSION_STATE_COMPILE_ERROR = 4;
+  SUBMISSION_STATE_WRONG_ANSWER = 5;
+  SUBMISSION_STATE_MEMORY_LIMIT_EXCEEDED = 6;
+  SUBMISSION_STATE_TIME_LIMIT_EXCEEDED = 7;
+  SUBMISSION_STATE_RUNTIME_ERROR = 8;
+}
+
+message Submission {
+  optional string id = 1;
+  string question_id = 2;
+  optional SubmissionState state = 3;
+  bytes code = 4;
+}
+
+message GetSubmissionsResponse {
+  repeated Submission submissions = 1;
+}
+
+message ID {
+  string value = 1;
+}
+
+message ChangeQuestionStateRequest {
+  string question_id = 1;
+  QuestionState state = 2;
+}
+
+message UpdateSubmissionRequest {
+  string submission_id = 1;
+  SubmissionState state = 2;
+}
