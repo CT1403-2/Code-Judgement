@@ -20,6 +20,7 @@ dependencies:
 			exit 1; \
 		fi; \
 		go install google.golang.org/protobuf/cmd/protoc-gen-go@latest; \
+		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest; \
 		echo "protoc installed: $$(protoc --version)"; \
 	fi
 
@@ -28,4 +29,4 @@ generate:
 	#go generate ./internal/...
 
 build: generate
-	go build -gcflags="all=-N -l" -o ./build/bin/ ./cmd/ui/main.go
+	go build -gcflags="all=-N -l" -o ./build/bin/$(target) ./$(target)/cmd/
