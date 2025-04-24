@@ -1,0 +1,18 @@
+<div class="container mt-4">
+  <ul class="nav nav-tabs">
+    <li class="nav-item" *ngFor="let tab of tabs; let i = index">
+      <a
+        class="nav-link"
+        [class.active]="activeTab == i"
+        (click)="setActiveTab(i)"
+        href="javascript:void(0)"
+      >
+        {{ tab }}
+      </a>
+    </li>
+    <li class="empty-item"></li>
+  </ul>
+  <div class="tab-content">
+    <ng-content></ng-content>
+  </div>
+</div>

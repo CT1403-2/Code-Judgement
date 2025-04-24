@@ -1,0 +1,14 @@
+<app-tab-manager
+  [tabs]="['All Questions', 'My Questions', 'Create New Question']"
+  [(activeTab)]="tabIndex"
+>
+  <p *ngIf="tabIndex == 0">
+    Hi0
+  </p>
+  <p *ngIf="tabIndex == 1">
+    Hi1
+  </p>
+  <p *ngIf="tabIndex == 2">
+    Hi2
+  </p>
+</app-tab-manager>
