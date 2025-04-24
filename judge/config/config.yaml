@@ -1,0 +1,6 @@
+manager:
+  address: "manager:8000"
+  timeout: 2s
+
+runner:
+  image: "runner:v0.0.7"

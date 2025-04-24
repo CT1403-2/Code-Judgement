@@ -1,0 +1,12 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	args := os.Args[1:]
+	output := strings.Join(args, " ")
+	fmt.Print(output)

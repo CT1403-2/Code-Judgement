@@ -1,0 +1,10 @@
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+    ls := make([]int64, 0, 160000)
+	fmt.Println(cap(ls))
+}
