@@ -1,1 +1,8 @@
-<p>question-detail works!</p>
+<div class="question-detail">
+  <h1>{{ question.title }}</h1>
+  <p class="limitations">
+    <strong>Time Limit:</strong> {{ question.limitations?.duration }} ms<br>
+    <strong>Memory Limit:</strong> {{ question.limitations?.memory }} MB
+  </p>
+  <pre>{{ question.statement }}</pre>
+</div>

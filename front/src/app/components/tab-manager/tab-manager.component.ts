@@ -8,7 +8,7 @@ import {Component, EventEmitter, input, Input, Output} from '@angular/core';
 })
 export class TabManagerComponent {
   @Input({required: true })
-  tabs: string[] = [];
+  tabs!: string[];
 
   @Output()
   activeTabChange = new EventEmitter<number>();

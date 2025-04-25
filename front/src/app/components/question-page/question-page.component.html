@@ -2,4 +2,7 @@
   [tabs]="['All Questions', 'My Questions', 'Create New Question']"
   [(activeTab)]="activeTab"
 >
+  <app-question-list *ngIf="activeTab == 0"></app-question-list>
+  <app-question-list *ngIf="activeTab == 1"></app-question-list>
+  <app-new-question *ngIf="activeTab == 2"></app-new-question>
 </app-tab-manager>

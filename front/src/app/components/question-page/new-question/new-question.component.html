@@ -1,1 +1,63 @@
-<p>new-question works!</p>
+<div class="new-question-container">
+  <h2>Create a New Question</h2>
+
+  <form class="form-group">
+    <label for="title">Title:</label>
+    <input
+      id="title"
+      type="text"
+      class="form-control"
+      [(ngModel)]="question.title"
+      placeholder="Enter question title"
+    />
+
+    <label for="statement">Statement:</label>
+    <textarea
+      id="statement"
+      class="form-control"
+      [(ngModel)]="question.statement" rows="5"
+      placeholder="Enter question statement"
+    ></textarea>
+
+    <label for="duration">Time Limit (ms):</label>
+    <input
+      id="duration"
+      type="number"
+      class="form-control"
+      [(ngModel)]="question.limitations.duration"
+      placeholder="Enter time limit"
+    />
+
+    <label for="memory">Memory Limit (MB):</label>
+    <input
+      id="memory"
+      type="number"
+      class="form-control"
+      [(ngModel)]="question.limitations.memory"
+      placeholder="Enter memory limit"
+    />
+
+    <label for="input">Test Input:</label>
+    <textarea
+      id="input"
+      class="form-control"
+      [(ngModel)]="question.input" rows="3"
+      placeholder="Enter test input"
+    ></textarea>
+
+    <label for="output">Expected Output:</label>
+    <textarea
+      id="output"
+      class="form-control"
+      [(ngModel)]="question.output"
+      rows="3"
+      placeholder="Enter expected output"
+    ></textarea>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="onSave()"
+    >Save Question</button>
+  </form>
+</div>

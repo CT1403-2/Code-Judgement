@@ -1,5 +1,13 @@
 <app-tab-manager
   [tabs]="['All Profiles', 'My Profile']"
+  [(activeTab)]="activeTab"
   (activeTabChange)="myProfile($event)"
 >
+  <app-table
+    *ngIf="activeTab == 0"
+    [columns]="['Username']"
+    [data]="[{ Username: 'ahshqhir' }, { Username: 'ahshqhir2' }]"
+    (click)="profile($event.row.Username)"
+  >
+  </app-table>
 </app-tab-manager>

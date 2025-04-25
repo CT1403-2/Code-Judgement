@@ -1,6 +1,7 @@
 .container {
   width: 100vw;
-  height: 90vh;
+  min-height: 90vh;
+  height: fit-content;
   max-width: 97vw;
 }
 

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
+import { NgChartjsModule } from 'ng-chartjs';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -16,6 +17,7 @@ import { SubmitComponent } from './components/question/submit/submit.component';
 import { ProfileDetailComponent } from './components/profile/profile-detail/profile-detail.component';
 import { QuestionDetailComponent } from './components/question/question-detail/question-detail.component';
 import { SubmissionListComponent } from './components/submission-list/submission-list.component';
+import { TableComponent } from './components/table/table.component';
 
 @NgModule({
   declarations: [
@@ -31,11 +33,13 @@ import { SubmissionListComponent } from './components/submission-list/submission
     SubmitComponent,
     ProfileDetailComponent,
     QuestionDetailComponent,
-    SubmissionListComponent
+    SubmissionListComponent,
+    TableComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
+    NgChartjsModule,
     AppRoutingModule
   ],
   providers: [],

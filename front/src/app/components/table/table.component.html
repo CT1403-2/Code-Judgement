@@ -1,0 +1,23 @@
+<div class="table-container">
+  <table>
+    <thead>
+    <tr>
+      <th *ngFor="let column of columns">{{ column }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let row of paginatedData">
+      <td
+        *ngFor="let column of columns"
+        (click)="click.emit({row: row, column: column})"
+      >{{ row[column] }}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+  </div>
+</div>
