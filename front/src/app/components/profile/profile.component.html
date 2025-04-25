@@ -1,0 +1,7 @@
+<app-tab-manager
+  [tabs]="['Details', 'Submissions']"
+  [(activeTab)]="activeTab"
+>
+  <app-profile-detail *ngIf="activeTab == 0"></app-profile-detail>
+  <app-submission-list *ngIf="activeTab == 1"></app-submission-list>
+</app-tab-manager>
