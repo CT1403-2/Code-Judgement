@@ -1,0 +1,63 @@
+<div class="new-question-container">
+  <h2>Create a New Question</h2>
+
+  <form class="form-group">
+    <label for="title">Title:</label>
+    <input
+      [(ngModel)]="question.title"
+      class="form-control"
+      id="title"
+      placeholder="Enter question title"
+      type="text"
+    />
+
+    <label for="statement">Statement:</label>
+    <textarea
+      [(ngModel)]="question.statement"
+      class="form-control"
+      id="statement"
+      placeholder="Enter question statement"
+      rows="5"
+    ></textarea>
+
+    <label for="duration">Time Limit (ms):</label>
+    <input
+      [(ngModel)]="question.limitations.duration"
+      class="form-control"
+      id="duration"
+      placeholder="Enter time limit"
+      type="number"
+    />
+
+    <label for="memory">Memory Limit (MB):</label>
+    <input
+      [(ngModel)]="question.limitations.memory"
+      class="form-control"
+      id="memory"
+      placeholder="Enter memory limit"
+      type="number"
+    />
+
+    <label for="input">Test Input:</label>
+    <textarea
+      [(ngModel)]="question.input"
+      class="form-control"
+      id="input"
+      placeholder="Enter test input"
+      rows="3"
+    ></textarea>
+
+    <label for="output">Expected Output:</label>
+    <textarea
+      [(ngModel)]="question.output"
+      class="form-control"
+      id="output"
+      placeholder="Enter expected output"
+      rows="3"
+    ></textarea>
+
+    <button (click)="onSave()" class="btn btn-primary" type="button">
+      Save Question
+    </button>
+  </form>
+</div>
