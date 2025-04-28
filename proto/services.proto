@@ -30,12 +30,14 @@ message AuthenticationRequest{
 
 message AuthenticationResponse {
   string value = 1;
+  Role role = 2;
 }
 
 enum Role {
   ROLE_UNKNOWN = 0;
   ROLE_MEMBER = 1;
   ROLE_ADMIN = 2;
+  ROLE_SUPERUSER = 3;
 }
 
 message ChangeRoleRequest {
