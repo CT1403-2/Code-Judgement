@@ -30,6 +30,7 @@ message AuthenticationRequest{
 
 message AuthenticationResponse {
   string value = 1;
+  Role role = 2;
 }
 
 enum Role {
