@@ -9,7 +9,7 @@ service Manager{
 
   rpc ChangeRole(ChangeRoleRequest) returns (Empty) {}
   rpc GetProfile(ID) returns (GetProfileResponse) {}
-  rpc GetProfiles(Empty) returns (GetProfilesResponse) {}
+  rpc GetProfiles(GetProfilesRequest) returns (GetProfilesResponse) {}
   rpc GetStatsRequest(ID) returns (GetStatsResponse) {}
 
   rpc GetQuestions(GetQuestionsRequest) returns (GetQuestionsResponse) {}
@@ -49,6 +49,11 @@ message Empty {}
 
 message GetProfileResponse {
   string username = 1;
+  Role role = 2;
+}
+
+message GetProfilesRequest {
+  repeated Filter filters = 1;
 }
 
 message GetProfilesResponse {
