@@ -49,6 +49,7 @@ message Empty {}
 
 message GetProfileResponse {
   string username = 1;
+  Role role = 2;
 }
 
 message GetProfilesResponse {
