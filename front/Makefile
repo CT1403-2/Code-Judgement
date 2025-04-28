@@ -19,3 +19,4 @@ generate:
 	protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=./src/app/services -I ../proto/ services.proto
 
 build: generate
+	ng build --output-path ../build --configuration production
