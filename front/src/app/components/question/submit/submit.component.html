@@ -5,11 +5,12 @@
     [(ngModel)]="codeInput"
     cols="50"
     placeholder="Enter your code here"
+    class="form-control"
     rows="10"
   ></textarea>
 
   <label for="fileInput">Upload a file:</label>
-  <input (change)="onFileSelected($event)" id="fileInput" type="file" />
+  <input [(ngModel)]="file" id="fileInput" [multiple]="false" type="file" />
 
   <button (click)="onSubmit()">Submit</button>
 </div>
