@@ -2,3 +2,4 @@
 *.pb.go
 build/
 **/mocks/*
+.env

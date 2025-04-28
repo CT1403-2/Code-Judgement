@@ -1,5 +1,5 @@
 dependencies:
-	#go mod download
+	go mod download
 
 	@if command -v mockery >/dev/null 2>&1; then \
 		echo "">/dev/null; \
