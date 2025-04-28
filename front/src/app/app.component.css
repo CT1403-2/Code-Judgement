@@ -2,11 +2,16 @@ header {
   height: 5vh;
   background-color: gray;
 }
+
+header .nav-tabs .nav-item .nav-link {
+  color: #cccccc;
+}
+
 .container {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
 }

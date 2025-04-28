@@ -1,23 +1,23 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-table',
   standalone: false,
   templateUrl: './table.component.html',
-  styleUrl: './table.component.css'
+  styleUrl: './table.component.css',
 })
 export class TableComponent<T> implements OnInit {
-  @Input()
-  data: T[] = [];
+  @Input({ required: true })
+  data!: T[];
 
-  @Input()
-  columns: string[] = [];
+  @Input({ required: true })
+  columns!: string[];
 
   @Input()
   pageSize: number = 5;
 
   @Output()
-  click = new EventEmitter<{row: T, column: string}>
+  click = new EventEmitter<{ row: T; column: string }>();
 
   currentPage: number = 1;
   totalPages: number = 1;
@@ -45,6 +45,18 @@ export class TableComponent<T> implements OnInit {
     if (this.currentPage > 1) {
       this.currentPage--;
       this.updatePagination();
+    }
+  }
+
+  getData(row: T, column: string) {
+    const anyRow = row as any;
+    const field = column
+      .replace(/\s+/g, '')
+      .replace(/^./, (match) => match.toLowerCase());
+    if (anyRow[`${field}Title`]) {
+      return anyRow[`${field}Title`];
+    } else {
+      return anyRow[field];
     }
   }
 }

@@ -1,12 +1,12 @@
-import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/core';
-import {GetStatsResponse} from '../../../services/services';
+import { Component, Input } from '@angular/core';
+import { GetStatsResponse } from '../../../services/services';
 import * as chart from 'chart.js';
 
 @Component({
   selector: 'app-profile-detail',
   standalone: false,
   templateUrl: './profile-detail.component.html',
-  styleUrl: './profile-detail.component.css'
+  styleUrl: './profile-detail.component.css',
 })
 export class ProfileDetailComponent {
   @Input({ required: true })
@@ -23,7 +23,10 @@ export class ProfileDetailComponent {
       labels: ['Unsolved Questions', 'Solved Questions'],
       datasets: [
         {
-          data: [this.stats.triedQuestions - this.stats.solvedQuestions, this.stats.solvedQuestions],
+          data: [
+            this.stats.triedQuestions - this.stats.solvedQuestions,
+            this.stats.solvedQuestions,
+          ],
         },
       ],
     },
@@ -35,5 +38,5 @@ export class ProfileDetailComponent {
         },
       },
     },
-  }
+  };
 }

@@ -1,7 +1,13 @@
 <app-tab-manager
-  [tabs]="['Details', 'Submissions']"
-  [(activeTab)]="activeTab"
+  [tabs]="[
+    { title: 'Details', content: details },
+    { title: 'Submissions', content: submissions },
+  ]"
 >
-  <app-profile-detail *ngIf="activeTab == 0" [username]="username"></app-profile-detail>
-  <app-submission-list *ngIf="activeTab == 1"></app-submission-list>
 </app-tab-manager>
+<ng-template #details>
+  <app-profile-detail [username]="username"></app-profile-detail>
+</ng-template>
+<ng-template #submissions>
+  <app-submission-list></app-submission-list>
+</ng-template>

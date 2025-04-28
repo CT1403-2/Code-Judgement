@@ -1,11 +1,12 @@
 <div class="profile-detail">
   <h1>{{ username }}</h1>
   <div class="chart-view">
-    <canvas ngChartjs
-            [chartType]="config.type"
-            [datasets]="config.data.datasets"
-            [labels]="config.data.labels ?? []"
-            [options]="config.options"
+    <canvas
+      [chartType]="config.type"
+      [datasets]="config.data.datasets"
+      [labels]="config.data.labels ?? []"
+      [options]="config.options"
+      ngChartjs
     >
     </canvas>
   </div>

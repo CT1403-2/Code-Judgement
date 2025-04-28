@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import {FormsModule} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { NgChartjsModule } from 'ng-chartjs';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -18,6 +18,7 @@ import { ProfileDetailComponent } from './components/profile/profile-detail/prof
 import { QuestionDetailComponent } from './components/question/question-detail/question-detail.component';
 import { SubmissionListComponent } from './components/submission-list/submission-list.component';
 import { TableComponent } from './components/table/table.component';
+import { ErrorComponent } from './components/error/error.component';
 
 @NgModule({
   declarations: [
@@ -34,15 +35,11 @@ import { TableComponent } from './components/table/table.component';
     ProfileDetailComponent,
     QuestionDetailComponent,
     SubmissionListComponent,
-    TableComponent
+    TableComponent,
+    ErrorComponent,
   ],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    NgChartjsModule,
-    AppRoutingModule
-  ],
+  imports: [BrowserModule, FormsModule, NgChartjsModule, AppRoutingModule],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

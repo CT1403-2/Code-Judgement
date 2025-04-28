@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-submit',
   standalone: false,
   templateUrl: './submit.component.html',
-  styleUrl: './submit.component.css'
+  styleUrl: './submit.component.css',
 })
 export class SubmitComponent {
   codeInput: string = '';

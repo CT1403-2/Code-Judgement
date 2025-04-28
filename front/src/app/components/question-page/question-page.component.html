@@ -1,8 +1,17 @@
 <app-tab-manager
-  [tabs]="['All Questions', 'My Questions', 'Create New Question']"
-  [(activeTab)]="activeTab"
+  [tabs]="[
+    { title: 'All Questions', content: all },
+    { title: 'My Questions', content: mine },
+    { title: 'Create New Question', content: new },
+  ]"
 >
-  <app-question-list *ngIf="activeTab == 0"></app-question-list>
-  <app-question-list *ngIf="activeTab == 1"></app-question-list>
-  <app-new-question *ngIf="activeTab == 2"></app-new-question>
 </app-tab-manager>
+<ng-template #all>
+  <app-question-list></app-question-list>
+</ng-template>
+<ng-template #mine>
+  <app-question-list></app-question-list>
+</ng-template>
+<ng-template #new>
+  <app-new-question></app-new-question>
+</ng-template>

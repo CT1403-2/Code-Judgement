@@ -1,11 +1,11 @@
-import {Component} from '@angular/core';
-import {Question, QuestionState} from '../../../services/services';
+import { Component } from '@angular/core';
+import { QuestionState } from '../../../services/services';
 
 @Component({
   selector: 'app-new-question',
   standalone: false,
   templateUrl: './new-question.component.html',
-  styleUrl: './new-question.component.css'
+  styleUrl: './new-question.component.css',
 })
 export class NewQuestionComponent {
   question = {

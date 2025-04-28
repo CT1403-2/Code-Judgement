@@ -4,60 +4,60 @@
   <form class="form-group">
     <label for="title">Title:</label>
     <input
-      id="title"
-      type="text"
-      class="form-control"
       [(ngModel)]="question.title"
+      class="form-control"
+      id="title"
       placeholder="Enter question title"
+      type="text"
     />
 
     <label for="statement">Statement:</label>
     <textarea
-      id="statement"
+      [(ngModel)]="question.statement"
       class="form-control"
-      [(ngModel)]="question.statement" rows="5"
+      id="statement"
       placeholder="Enter question statement"
+      rows="5"
     ></textarea>
 
     <label for="duration">Time Limit (ms):</label>
     <input
-      id="duration"
-      type="number"
-      class="form-control"
       [(ngModel)]="question.limitations.duration"
+      class="form-control"
+      id="duration"
       placeholder="Enter time limit"
+      type="number"
     />
 
     <label for="memory">Memory Limit (MB):</label>
     <input
-      id="memory"
-      type="number"
-      class="form-control"
       [(ngModel)]="question.limitations.memory"
+      class="form-control"
+      id="memory"
       placeholder="Enter memory limit"
+      type="number"
     />
 
     <label for="input">Test Input:</label>
     <textarea
-      id="input"
+      [(ngModel)]="question.input"
       class="form-control"
-      [(ngModel)]="question.input" rows="3"
+      id="input"
       placeholder="Enter test input"
+      rows="3"
     ></textarea>
 
     <label for="output">Expected Output:</label>
     <textarea
-      id="output"
-      class="form-control"
       [(ngModel)]="question.output"
-      rows="3"
+      class="form-control"
+      id="output"
       placeholder="Enter expected output"
+      rows="3"
     ></textarea>
 
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="onSave()"
-    >Save Question</button>
+    <button (click)="onSave()" class="btn btn-primary" type="button">
+      Save Question
+    </button>
   </form>
 </div>

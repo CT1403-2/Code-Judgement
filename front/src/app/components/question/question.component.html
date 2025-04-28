@@ -1,9 +1,17 @@
 <app-tab-manager
-  [tabs]="['Details', 'Submissions', 'New Submission']"
-  [(activeTab)]="activeTab"
+  [tabs]="[
+    { title: 'Details', content: details },
+    { title: 'Submissions', content: submissions },
+    { title: 'New Submission', content: submit },
+  ]"
 >
-  <app-question-detail [question]="question" *ngIf="activeTab == 0"></app-question-detail>
-  <app-submission-list *ngIf="activeTab == 1"></app-submission-list>
-  <app-submit *ngIf="activeTab == 2"></app-submit>
 </app-tab-manager>
-
+<ng-template #details>
+  <app-question-detail [question]="question"></app-question-detail>
+</ng-template>
+<ng-template #submissions>
+  <app-submission-list></app-submission-list>
+</ng-template>
+<ng-template #submit>
+  <app-submit></app-submit>
+</ng-template>

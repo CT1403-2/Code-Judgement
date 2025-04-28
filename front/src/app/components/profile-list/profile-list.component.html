@@ -1,13 +1,13 @@
 <app-tab-manager
-  [tabs]="['All Profiles', 'My Profile']"
-  [(activeTab)]="activeTab"
-  (activeTabChange)="myProfile($event)"
+  (activeTabChange)="gotoMyProfile($event)"
+  [tabs]="[{ title: 'All Profiles', content: table }, { title: 'My Profile' }]"
 >
+</app-tab-manager>
+<ng-template #table>
   <app-table
-    *ngIf="activeTab == 0"
+    (click)="gotoProfile($event.row.username)"
     [columns]="['Username']"
-    [data]="[{ Username: 'ahshqhir' }, { Username: 'ahshqhir2' }]"
-    (click)="profile($event.row.Username)"
+    [data]="[{ username: 'ahshqhir' }, { username: 'ahshqhir2' }]"
   >
   </app-table>
-</app-tab-manager>
+</ng-template>

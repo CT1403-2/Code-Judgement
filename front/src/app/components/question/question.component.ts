@@ -1,14 +1,13 @@
-import {Component} from '@angular/core';
-import {Question, QuestionState} from '../../services/services';
+import { Component } from '@angular/core';
+import { Question, QuestionState } from '../../services/services';
 
 @Component({
   selector: 'app-question',
   standalone: false,
   templateUrl: './question.component.html',
-  styleUrl: './question.component.css'
+  styleUrl: './question.component.css',
 })
 export class QuestionComponent {
-  activeTab: number = 0
   question: Question = {
     title: 'Sample Question',
     statement: 'This is a sample question description.',
@@ -16,6 +15,6 @@ export class QuestionComponent {
       duration: 100,
       memory: 100,
     },
-    state: QuestionState.QUESTION_STATE_PUBLISHED
-  }
+    state: QuestionState.QUESTION_STATE_PUBLISHED,
+  };
 }

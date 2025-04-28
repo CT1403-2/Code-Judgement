@@ -1,19 +1,26 @@
 import { Injectable } from '@angular/core';
 
 interface Rpc {
-  request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
+  request(
+    service: string,
+    method: string,
+    data: Uint8Array,
+  ): Promise<Uint8Array>;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RpcService implements Rpc {
-  private readonly baseUrl = "";
+  private readonly baseUrl = '';
 
-  constructor() {
-  }
+  constructor() {}
 
-  async request(service: string, method: string, data: Uint8Array): Promise<Uint8Array> {
+  async request(
+    service: string,
+    method: string,
+    data: Uint8Array,
+  ): Promise<Uint8Array> {
     const url = `${this.baseUrl}/${service}/${method}`;
 
     return new Promise((resolve, reject) => {
@@ -23,19 +30,24 @@ export class RpcService implements Rpc {
         headers: {
           'Content-Type': 'application/octet-stream',
         },
-      }).then((response) => {
-        if (!response.ok) {
-          reject(new Error(`Request failed with status: ${response.status}`));
-        }
+      })
+        .then((response) => {
+          if (!response.ok) {
+            reject(new Error(`status:${response.status}`));
+          }
 
-        response.arrayBuffer().then((responseData) => {
-          resolve(new Uint8Array(responseData));
-        }).catch((error) => {
+          response
+            .arrayBuffer()
+            .then((responseData) => {
+              resolve(new Uint8Array(responseData));
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        })
+        .catch((error) => {
           reject(error);
         });
-      }).catch((error) => {
-        reject(error);
-      });
     });
   }
 }
