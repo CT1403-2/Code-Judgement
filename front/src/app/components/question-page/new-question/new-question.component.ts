@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { QuestionState } from '../../../services/services';
+import { ManagerService } from '../../../services/manager.service';
 
 @Component({
   selector: 'app-new-question',
@@ -20,11 +21,9 @@ export class NewQuestionComponent {
     state: QuestionState.QUESTION_STATE_DRAFT,
   };
 
+  constructor(private readonly manager: ManagerService) {}
+
   onSave(): void {
-    if (this.question.title && this.question.statement) {
-      console.log('Question saved:', this.question);
-    } else {
-      console.error('Please fill in all required fields.');
-    }
+    this.manager.CreateQuestion(this.question).catch((err) => {});
   }
 }
