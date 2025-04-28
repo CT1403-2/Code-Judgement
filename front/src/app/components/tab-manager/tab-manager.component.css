@@ -1,0 +1,32 @@
+.container {
+  width: 100vw;
+  min-height: 90vh;
+  height: fit-content;
+  max-width: 97vw;
+}
+
+.nav-link {
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px 5px 0 0;
+}
+
+.nav-link.active {
+  background: 0 0;
+  border: 1px solid #ccc;
+  border-radius: 5px 5px 0 0;
+  border-bottom: none;
+  font-weight: bold;
+}
+
+.empty-item {
+  flex: 1;
+  border-bottom: 1px solid #ccc;
+}
+
+.tab-content {
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+  padding: 10px;
+}

@@ -1,11 +1,5 @@
 dependencies:
-	#go mod download
-
-	@if command -v mockery >/dev/null 2>&1; then \
-		echo "">/dev/null; \
-	else \
-		go install github.com/vektra/mockery/v2@v2.52.4; \
-	fi
+	npm install
 
 	@if command -v protoc >/dev/null 2>&1; then \
 		echo "">/dev/null; \
@@ -18,14 +12,11 @@ dependencies:
 			echo "Unsupported distribution. Please install protoc manually."; \
 			exit 1; \
 		fi; \
-		go install google.golang.org/protobuf/cmd/protoc-gen-go@latest; \
-		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest; \
 		echo "protoc installed: $$(protoc --version)"; \
 	fi
 
 generate:
-	protoc -I ./proto/ services.proto --go_out=./ --go-grpc_out=./
-	go generate ./judge/...
+	protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=./src/app/services -I ../proto/ services.proto
 
-build: generate
-	go build -gcflags="all=-N -l" -o ./build/bin/$(target) ./$(target)/cmd/
+build:
+	ng build --output-path ../build --configuration production

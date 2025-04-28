@@ -1,4 +1,4 @@
 .idea/
 *.pb.go
-build/bin/
+build/
 **/mocks/*

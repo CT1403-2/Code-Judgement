@@ -1,0 +1,18 @@
+.question-detail {
+  padding: 16px;
+}
+
+.question-detail h1 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.question-detail .limitations {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.question-detail pre {
+  margin: 4px 0;
+}

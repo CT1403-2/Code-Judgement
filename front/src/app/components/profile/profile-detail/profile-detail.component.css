@@ -1,0 +1,11 @@
+.profile-detail {
+  text-align: center;
+}
+
+.chart-view {
+  height: fit-content;
+}
+
+canvas {
+  margin: auto;
+}

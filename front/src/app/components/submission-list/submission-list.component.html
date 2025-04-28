@@ -1,0 +1,6 @@
+<app-table
+  (click)="gotoQuestion($event.row.questionId)"
+  [columns]="['Id', 'Question Id', 'State']"
+  [data]="submissions"
+>
+</app-table>
