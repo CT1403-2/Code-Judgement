@@ -54,6 +54,7 @@ message GetProfileResponse {
 
 message GetProfilesResponse {
   repeated string usernames = 1;
+  int64 total_page_size = 2;
 }
 
 message GetStatsResponse {
