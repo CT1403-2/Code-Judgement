@@ -25,7 +25,7 @@ dependencies:
 
 generate:
 	protoc -I ./proto/ services.proto --go_out=./ --go-grpc_out=./
-	#go generate ./internal/...
+	go generate ./judge/...
 
 build: generate
 	go build -gcflags="all=-N -l" -o ./build/bin/$(target) ./$(target)/cmd/
