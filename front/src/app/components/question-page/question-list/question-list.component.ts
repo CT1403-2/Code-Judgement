@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Question, QuestionState } from '../../../services/services';
 import { Router } from '@angular/router';
+import { ManagerService } from '../../../services/manager.service';
 
 @Component({
   selector: 'app-question-list',
@@ -8,23 +9,26 @@ import { Router } from '@angular/router';
   templateUrl: './question-list.component.html',
   styleUrl: './question-list.component.css',
 })
-export class QuestionListComponent {
-  questions: Question[] = [
-    {
-      id: '1',
-      title: 'Sample Question',
-      statement: 'This is a sample question description.',
-      limitations: {
-        duration: 100,
-        memory: 100,
-      },
-      state: QuestionState.QUESTION_STATE_PUBLISHED,
-    },
-  ];
+export class QuestionListComponent implements OnInit {
+  questions!: Question[];
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly manager: ManagerService,
+  ) {}
 
   gotoQuestion(question?: string) {
     this.router.navigate(['questions', question]);
+  }
+
+  ngOnInit() {
+    this.manager
+      .GetQuestions({
+        filters: [],
+      })
+      .then((res) => {
+        this.questions = res.questions;
+      })
+      .catch((err) => {});
   }
 }

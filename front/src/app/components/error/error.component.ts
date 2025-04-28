@@ -1,5 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-error',
@@ -17,8 +17,8 @@ export class ErrorComponent implements OnInit {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly router: Router
-    ) {}
+    private readonly router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {

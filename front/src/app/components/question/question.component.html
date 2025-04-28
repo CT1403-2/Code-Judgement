@@ -7,10 +7,10 @@
 >
 </app-tab-manager>
 <ng-template #details>
-  <app-question-detail [question]="question"></app-question-detail>
+  <app-question-detail [questionId]="question"></app-question-detail>
 </ng-template>
 <ng-template #submissions>
-  <app-submission-list></app-submission-list>
+  <app-submission-list [question]="question"></app-submission-list>
 </ng-template>
 <ng-template #submit>
   <app-submit></app-submit>

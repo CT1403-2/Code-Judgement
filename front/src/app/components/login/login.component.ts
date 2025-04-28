@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import {ManagerService} from '../../services/manager.service';
-import {CookieService} from '../../services/cookie.service';
+import { ManagerService } from '../../services/manager.service';
+import { CookieService } from '../../services/cookie.service';
+import { Role, roleToJSON } from '../../services/services';
 
 @Component({
   selector: 'app-login',
@@ -14,23 +15,36 @@ export class LoginComponent {
 
   constructor(
     private readonly manager: ManagerService,
-    private readonly cookie: CookieService
-    ) {
-  }
+    private readonly cookie: CookieService,
+  ) {}
 
   login(): void {
-    this.manager.Login({
-      username: this.username,
-      password: this.password
-    }).then((res) => {
-      let date = new Date();
-      date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
-      this.cookie.setCookie('token', res.value, date);
-    }).catch((err) => {
-
-    });
+    this.manager
+      .Login({
+        username: this.username,
+        password: this.password,
+      })
+      .then((res) => {
+        let date = new Date();
+        date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
+        this.cookie.setCookie('token', res.value, date);
+        this.cookie.setCookie('role', roleToJSON(res.role), date);
+      })
+      .catch((err) => {});
   }
 
   signup(): void {
+    this.manager
+      .Register({
+        username: this.username,
+        password: this.password,
+      })
+      .then((res) => {
+        let date = new Date();
+        date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
+        this.cookie.setCookie('token', res.value, date);
+        this.cookie.setCookie('role', roleToJSON(res.role), date);
+      })
+      .catch((err) => {});
   }
 }

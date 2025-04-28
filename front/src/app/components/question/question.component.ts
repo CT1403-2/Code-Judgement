@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Question, QuestionState } from '../../services/services';
+import { ActivatedRoute } from '@angular/router';
+import { ManagerService } from '../../services/manager.service';
 
 @Component({
   selector: 'app-question',
@@ -7,14 +9,14 @@ import { Question, QuestionState } from '../../services/services';
   templateUrl: './question.component.html',
   styleUrl: './question.component.css',
 })
-export class QuestionComponent {
-  question: Question = {
-    title: 'Sample Question',
-    statement: 'This is a sample question description.',
-    limitations: {
-      duration: 100,
-      memory: 100,
-    },
-    state: QuestionState.QUESTION_STATE_PUBLISHED,
-  };
+export class QuestionComponent implements OnInit {
+  question!: string;
+
+  constructor(private readonly route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.route.params.subscribe((params) => {
+      this.question = params['id'];
+    });
+  }
 }

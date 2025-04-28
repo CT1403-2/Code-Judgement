@@ -3,6 +3,7 @@
     <thead>
       <tr>
         <th *ngFor="let column of columns">{{ column }}</th>
+        <th *ngIf="actionIcon">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -12,6 +13,9 @@
           *ngFor="let column of columns"
         >
           {{ getData(row, column) }}
+        </td>
+        <td *ngIf="actionIcon" (click)="action.emit(row)">
+          <span class="bi bi-{{ actionIcon }}"></span>
         </td>
       </tr>
     </tbody>

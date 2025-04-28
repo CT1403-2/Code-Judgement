@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
   styleUrl: './profile-list.component.css',
 })
 export class ProfileListComponent {
-  currentUser: string = 'ahshqhir';
+  currentUser!: string;
 
   constructor(private readonly router: Router) {}
 

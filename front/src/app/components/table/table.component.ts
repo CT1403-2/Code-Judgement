@@ -16,8 +16,14 @@ export class TableComponent<T> implements OnInit {
   @Input()
   pageSize: number = 5;
 
+  @Input()
+  actionIcon?: string;
+
   @Output()
   click = new EventEmitter<{ row: T; column: string }>();
+
+  @Output()
+  action = new EventEmitter<T>();
 
   currentPage: number = 1;
   totalPages: number = 1;

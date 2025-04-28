@@ -1,6 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { GetStatsResponse } from '../../../services/services';
 import * as chart from 'chart.js';
+import { ManagerService } from '../../../services/manager.service';
+import { grpc } from '@improbable-eng/grpc-web';
 
 @Component({
   selector: 'app-profile-detail',
@@ -8,14 +10,11 @@ import * as chart from 'chart.js';
   templateUrl: './profile-detail.component.html',
   styleUrl: './profile-detail.component.css',
 })
-export class ProfileDetailComponent {
+export class ProfileDetailComponent implements OnInit {
   @Input({ required: true })
   username!: string;
 
-  stats: GetStatsResponse = {
-    triedQuestions: 10,
-    solvedQuestions: 5,
-  };
+  stats!: GetStatsResponse;
 
   config: chart.ChartConfiguration = {
     type: 'doughnut',
@@ -39,4 +38,17 @@ export class ProfileDetailComponent {
       },
     },
   };
+
+  constructor(private readonly manager: ManagerService) {}
+
+  ngOnInit() {
+    this.manager
+      .GetStatsRequest({
+        value: this.username,
+      })
+      .then((res) => {
+        this.stats = res;
+      })
+      .catch((err) => {});
+  }
 }
