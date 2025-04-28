@@ -43,7 +43,6 @@ export class LoginComponent {
         let date = new Date();
         date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
         this.cookie.setCookie('token', res.value, date);
-        this.cookie.setCookie('role', roleToJSON(res.role), date);
       })
       .catch((err) => {});
   }
