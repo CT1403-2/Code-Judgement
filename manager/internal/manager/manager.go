@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	"manger/internal"
 	"manger/internal/database"
+	"strconv"
 )
 
 type Manager struct {
@@ -129,9 +130,18 @@ func (m *Manager) GetProfile(ctx context.Context, req *proto.ID) (*proto.GetProf
 	}
 }
 
-func (m *Manager) GetProfiles(ctx context.Context, req *proto.Empty) (*proto.GetProfilesResponse, error) {
-	var pageNumber, pageSize int32
-	usernames, totalPage, err := m.db.GetUsernames(ctx, pageNumber, pageSize)
+func (m *Manager) GetProfiles(ctx context.Context, req *proto.GetProfilesRequest) (*proto.GetProfilesResponse, error) {
+	var pageNumber int
+	filtersMap := getFiltersMap(req.Filters)
+	var str string
+	str, ok := filtersMap[pageNumberName]
+	pageNumber, err := strconv.Atoi(str)
+
+	if !ok || err != nil {
+		pageNumber = defaultPageNumber
+	}
+
+	usernames, totalPage, err := m.db.GetUsernames(ctx, pageNumber, defaultPageSize)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "")
 	}
@@ -175,4 +185,12 @@ func GetUserIdFromToken(ctx context.Context) (int32, error) {
 		return 0, err
 	}
 	return userId, nil
+}
+
+func getFiltersMap(filters []*proto.Filter) map[string]string {
+	m := make(map[string]string)
+	for _, filter := range filters {
+		m[filter.Field] = filter.Value
+	}
+	return m
 }

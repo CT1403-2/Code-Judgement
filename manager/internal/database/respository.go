@@ -25,7 +25,7 @@ type Repository interface {
 	GetUserRole(ctx context.Context, userId int32) (string, proto.Role, error)
 	GetUserRoleByUsername(ctx context.Context, username string) (int32, proto.Role, error)
 	UpdateUserRole(ctx context.Context, userId int32, role proto.Role) error
-	GetUsernames(ctx context.Context, pageNumber, pageSize int32) ([]string, int32, error)
+	GetUsernames(ctx context.Context, pageNumber, pageSize int) ([]string, int, error)
 }
 
 type postgresqlRepository struct {
@@ -169,10 +169,10 @@ func (p *postgresqlRepository) UpdateUserRole(ctx context.Context, userId int32,
 	return err
 }
 
-func (p *postgresqlRepository) GetUsernames(ctx context.Context, pageNumber, pageSize int32) ([]string, int32, error) {
+func (p *postgresqlRepository) GetUsernames(ctx context.Context, pageNumber, pageSize int) ([]string, int, error) {
 	offset := (pageNumber - 1) * pageSize
 
-	var count int32
+	var count int
 	err := p.pool.QueryRow(ctx, getUsernamesCountQuery).Scan(&count)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to scan row: %v", err)
@@ -182,7 +182,7 @@ func (p *postgresqlRepository) GetUsernames(ctx context.Context, pageNumber, pag
 		return nil, 0, errors.New("negative page size")
 	}
 
-	totalPage := int32(math.Ceil(float64(count) / float64(pageSize)))
+	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
 
 	if pageNumber > totalPage {
 		return nil, 0, errors.New("out of bounds page number")
