@@ -1,0 +1,17 @@
+<div class="profile-detail">
+  <h1>{{ username }}</h1>
+  <h3>{{ roleTitles[role] }}</h3>
+  <button class="btn btn-primary" *ngIf="canChange" (click)="changeRole()">
+    Change Role
+  </button>
+  <div class="chart-view">
+    <canvas
+      [chartType]="config.type"
+      [datasets]="config.data.datasets"
+      [labels]="config.data.labels ?? []"
+      [options]="config.options"
+      ngChartjs
+    >
+    </canvas>
+  </div>
+</div>

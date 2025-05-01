@@ -1,0 +1,17 @@
+<app-tab-manager
+  [tabs]="[
+    { title: 'All Questions', content: all },
+    { title: 'My Questions', content: mine },
+    { title: 'Create New Question', content: new },
+  ]"
+>
+</app-tab-manager>
+<ng-template #all>
+  <app-question-list></app-question-list>
+</ng-template>
+<ng-template #mine>
+  <app-question-list></app-question-list>
+</ng-template>
+<ng-template #new>
+  <app-new-question></app-new-question>
+</ng-template>

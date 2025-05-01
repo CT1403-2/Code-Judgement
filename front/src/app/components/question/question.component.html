@@ -1,0 +1,17 @@
+<app-tab-manager
+  [tabs]="[
+    { title: 'Details', content: details },
+    { title: 'Submissions', content: submissions },
+    { title: 'New Submission', content: submit },
+  ]"
+>
+</app-tab-manager>
+<ng-template #details>
+  <app-question-detail [questionId]="question"></app-question-detail>
+</ng-template>
+<ng-template #submissions>
+  <app-submission-list [question]="question"></app-submission-list>
+</ng-template>
+<ng-template #submit>
+  <app-submit [question]="question"></app-submit>
+</ng-template>
