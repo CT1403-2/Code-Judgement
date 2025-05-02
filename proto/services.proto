@@ -20,7 +20,7 @@ service Manager{
   rpc EditQuestion(Question) returns (Empty) {}
   rpc ChangeQuestionState(ChangeQuestionStateRequest) returns (Empty) {}
 
-  rpc UpdateSubmission(Submission) returns (Empty) {}
+  rpc UpdateSubmission(Submission) returns (UpdateSubmissionResponse) {}
 }
 
 message AuthenticationRequest{
@@ -124,6 +124,7 @@ enum SubmissionState {
   SUBMISSION_STATE_MEMORY_LIMIT_EXCEEDED = 6;
   SUBMISSION_STATE_TIME_LIMIT_EXCEEDED = 7;
   SUBMISSION_STATE_RUNTIME_ERROR = 8;
+  SUBMISSION_STATE_FAILED = 9;
 }
 
 message Submission {
@@ -150,4 +151,8 @@ message ChangeQuestionStateRequest {
 message UpdateSubmissionRequest {
   string submission_id = 1;
   SubmissionState state = 2;
+}
+
+message UpdateSubmissionResponse {
+  bool updated = 1;
 }
