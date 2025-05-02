@@ -51,7 +51,7 @@ func server(port string) error {
 	}
 	proto.RegisterManagerServer(grpcServer, man)
 
-	httpServer := &http.Server{Handler: http.FileServer(http.Dir("front"))}
+	httpServer := &http.Server{Handler: http.FileServer(http.Dir("build/browser"))}
 
 	go func() {
 		log.Println("Starting grpc on " + port)
