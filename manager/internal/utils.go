@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/metadata"
@@ -57,8 +58,9 @@ func ValidateJWT(tokenString string) (int32, int32, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		fmt.Println(claims)
 		userId := int32(claims["userId"].(float64))
-		roleType := int32(claims["roleType"].(float64))
+		roleType := proto.Role_value[claims["roleType"].(string)]
 		exp := time.Unix(int64(claims["exp"].(float64)), 0)
 		if time.Now().After(exp) {
 			return 0, 0, errors.New("token is expired")
