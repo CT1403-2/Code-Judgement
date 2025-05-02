@@ -55,8 +55,8 @@ const (
 	getUserStatsQuery = `
 		SELECT 
 			COUNT(DISTINCT question_id) AS tried_count,
-			COUNT(DISTINCT CASE WHEN state = $2 THEN question_id END) AS success_count,
-		FROM submission
+			COUNT(DISTINCT CASE WHEN state = $2 THEN question_id END) AS success_count
+		FROM submissions
 		WHERE user_id = $1`
 
 	getQuestionsCountQuery = `SELECT count(*) FROM questions`
