@@ -23,14 +23,6 @@ func NewManager() (*Manager, error) {
 	return &Manager{db: db}, err
 }
 
-func (m *Manager) Start() error {
-	panic("implement me")
-}
-
-func (m *Manager) Stop() error {
-	panic("implement me")
-}
-
 func (m *Manager) Register(ctx context.Context, authRequest *proto.AuthenticationRequest) (*proto.AuthenticationResponse, error) {
 	username := authRequest.GetUsername()
 	if len(username) < usernameMinLength {
