@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/CT1403-2/Code-Judgement/proto"
+	"github.com/soheilhy/cmux"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"log"
 	"manger/internal/manager"
 	"net"
 	"net/http"
-	"os"
 )
 
 var serveCmd = &cobra.Command{
@@ -20,7 +20,7 @@ var serveCmd = &cobra.Command{
 		port, _ := cmd.Flags().GetString("port")
 
 		fmt.Println("Server started")
-		err := serve(port)
+		err := server(port)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -29,40 +29,48 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-
 	// Add flags specific to this command
-	serveCmd.Flags().StringP("port", "p", os.Getenv("SERVER_PORT"), "Port to run the server on")
+	serveCmd.Flags().StringP("port", "p", "", "Port to run the server on")
 }
 
-func serve(port string) error {
-	fmt.Println()
-	go serveStaticFiles(port)
-
-	lis, err := net.Listen("tcp", port)
+func server(port string) error {
+	addr := ":" + port
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		return fmt.Errorf("failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	m := cmux.New(lis)
 
-	m, err := manager.NewManager()
+	grpcL := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	httpL := m.Match(cmux.HTTP1Fast())
+
+	grpcServer := grpc.NewServer()
+	man, err := manager.NewManager()
 	if err != nil {
 		return err
 	}
+	proto.RegisterManagerServer(grpcServer, man)
 
-	proto.RegisterManagerServer(grpcServer, m)
+	httpServer := &http.Server{Handler: http.FileServer(http.Dir("front"))}
 
-	if err := grpcServer.Serve(lis); err != nil {
-		return fmt.Errorf("failed to serve: %v", err)
+	go func() {
+		log.Println("Starting grpc on " + port)
+		if err := grpcServer.Serve(grpcL); err != nil {
+			log.Fatalf("gRPC server error: %v", err)
+		}
+	}()
+
+	go func() {
+		log.Println("Serving HTTP on", port)
+		if err := httpServer.Serve(httpL); err != nil {
+			log.Fatalf("HTTP server error: %v", err)
+		}
+	}()
+
+	// Start cmux
+	log.Println("Starting multiplexer on", port)
+	if err := m.Serve(); err != nil {
+		log.Fatalf("cmux server error: %v", err)
 	}
-	return err
-}
-
-func serveStaticFiles(port string) {
-	fs := http.FileServer(http.Dir("../../front/")) // Your static directory
-	http.Handle("/", fs)
-	addr := ":" + port
-	log.Printf("Serving static files on %v\n", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Fatalf("Static server failed: %v", err)
-	}
+	return nil
 }
