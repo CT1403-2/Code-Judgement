@@ -58,7 +58,6 @@ func ValidateJWT(tokenString string) (int32, int32, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
 		userId := int32(claims["userId"].(float64))
 		roleType := proto.Role_value[claims["roleType"].(string)]
 		exp := time.Unix(int64(claims["exp"].(float64)), 0)
