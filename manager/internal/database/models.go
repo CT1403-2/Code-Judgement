@@ -13,7 +13,14 @@ type user struct {
 }
 
 type role struct {
-	id        string
+	id        int32
 	roleType  int32
 	createdAt time.Time
+}
+
+type submission struct {
+	id             int32
+	retryCount     int32
+	state          int32
+	stateUpdatedAt *time.Time
 }
