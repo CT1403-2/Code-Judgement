@@ -80,6 +80,7 @@ message Question {
   optional string input = 5;
   optional string output = 6;
   QuestionState state = 7;
+  string owner = 8;
 }
 
 message Limitations {
@@ -98,6 +99,7 @@ message GetQuestionsRequest {
 
 message GetQuestionsResponse {
   repeated Question questions = 1;
+  int64 total_page_size = 2;
 }
 
 message GetQuestionResponse {
@@ -133,6 +135,7 @@ message Submission {
 
 message GetSubmissionsResponse {
   repeated Submission submissions = 1;
+  int64 total_page_size = 2;
 }
 
 message ID {
