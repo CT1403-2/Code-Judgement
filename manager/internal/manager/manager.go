@@ -33,7 +33,13 @@ func (m *Manager) Stop() error {
 
 func (m *Manager) Register(ctx context.Context, authRequest *proto.AuthenticationRequest) (*proto.AuthenticationResponse, error) {
 	username := authRequest.GetUsername()
+	if len(username) < usernameMinLength {
+		return nil, status.Error(codes.InvalidArgument, "username too short")
+	}
 	password := authRequest.GetPassword()
+	if len(password) < passwordMinLength {
+		return nil, status.Error(codes.InvalidArgument, "password too short")
+	}
 	userId, err := m.db.CreateMember(ctx, username, password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

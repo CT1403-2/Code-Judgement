@@ -8,4 +8,6 @@ const (
 	stateFilter         = "state"
 	usernameFilter      = "username"
 	questionIdFilter    = "question_id"
+	usernameMinLength   = 4
+	passwordMinLength   = 8
 )
