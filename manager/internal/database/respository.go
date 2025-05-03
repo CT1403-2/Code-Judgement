@@ -7,6 +7,8 @@ import (
 	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"log"
 	"manger/internal"
 	"math"
@@ -192,7 +194,7 @@ func (p *postgresqlRepository) GetUsernames(ctx context.Context, pageNumber, pag
 	}
 
 	if pageSize <= 0 {
-		return nil, 0, errors.New("negative page size")
+		return nil, 0, status.Error(codes.InvalidArgument, "negative page size")
 	}
 
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
@@ -202,7 +204,7 @@ func (p *postgresqlRepository) GetUsernames(ctx context.Context, pageNumber, pag
 	}
 
 	if pageNumber > totalPage {
-		return nil, 0, errors.New("out of bounds page number")
+		return nil, 0, status.Error(codes.NotFound, "out of bounds page number")
 	}
 
 	rows, err := p.pool.Query(ctx, getUsernamesQuery, offset, pageSize)
@@ -258,7 +260,7 @@ func (p *postgresqlRepository) GetQuestions(ctx context.Context, publishedOnly b
 	}
 
 	if pageSize <= 0 {
-		return nil, 0, errors.New("negative page size")
+		return nil, 0, status.Error(codes.InvalidArgument, "negative page size")
 	}
 
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
@@ -266,7 +268,7 @@ func (p *postgresqlRepository) GetQuestions(ctx context.Context, publishedOnly b
 		return []*proto.Question{}, totalPage, nil
 	}
 	if pageNumber > totalPage {
-		return nil, 0, errors.New("out of bounds page number")
+		return nil, 0, status.Error(codes.NotFound, "out of bounds page number")
 	}
 	var questions []*proto.Question
 
@@ -298,7 +300,7 @@ func (p *postgresqlRepository) GetUserQuestions(ctx context.Context, userId int3
 		return nil, 0, fmt.Errorf("failed to scan row: %v", err)
 	}
 	if pageSize <= 0 {
-		return nil, 0, errors.New("negative page size")
+		return nil, 0, status.Error(codes.InvalidArgument, "negative page size")
 	}
 
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
@@ -308,7 +310,7 @@ func (p *postgresqlRepository) GetUserQuestions(ctx context.Context, userId int3
 	}
 
 	if pageNumber > totalPage {
-		return nil, 0, errors.New("out of bounds page number")
+		return nil, 0, status.Error(codes.NotFound, "out of bounds page number")
 	}
 	var questions []*proto.Question
 	rows, err := p.pool.Query(ctx, getUserQuestionsQuery, userId, offset, pageNumber)
@@ -520,7 +522,7 @@ func (p *postgresqlRepository) GetSubmissionsWithState(ctx context.Context, stat
 		return nil, 0, fmt.Errorf("failed to scan row: %v", err)
 	}
 	if pageSize <= 0 {
-		return nil, 0, errors.New("negative page size")
+		return nil, 0, status.Error(codes.InvalidArgument, "negative page size")
 	}
 
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
@@ -530,7 +532,7 @@ func (p *postgresqlRepository) GetSubmissionsWithState(ctx context.Context, stat
 	}
 
 	if pageNumber > totalPage {
-		return nil, 0, errors.New("out of bounds page number")
+		return nil, 0, status.Error(codes.NotFound, "out of bounds page number")
 	}
 
 	var submissions []*proto.Submission
@@ -575,7 +577,7 @@ func (p *postgresqlRepository) GetUserSubmissions(ctx context.Context, userId in
 		return nil, 0, fmt.Errorf("failed to scan row: %v", err)
 	}
 	if pageSize <= 0 {
-		return nil, 0, errors.New("negative page size")
+		return nil, 0, status.Error(codes.InvalidArgument, "negative page size")
 	}
 
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
@@ -585,7 +587,7 @@ func (p *postgresqlRepository) GetUserSubmissions(ctx context.Context, userId in
 	}
 
 	if pageNumber > totalPage {
-		return nil, 0, errors.New("out of bounds page number")
+		return nil, 0, status.Error(codes.NotFound, "out of bounds page number")
 	}
 
 	var submissions []*proto.Submission
