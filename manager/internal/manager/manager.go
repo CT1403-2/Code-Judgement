@@ -228,7 +228,7 @@ func (m *Manager) GetQuestion(ctx context.Context, req *proto.ID) (*proto.GetQue
 	}
 	questionId, err := strconv.Atoi(req.Value)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.NotFound, "question not found: %v", req.Value)
 	}
 	question, err := m.db.GetQuestion(ctx, questionId)
 	if err != nil {
@@ -254,7 +254,7 @@ func (m *Manager) Submit(ctx context.Context, req *proto.SubmitRequest) (*proto.
 	questionIdStr := submission.GetQuestionId()
 	questionId, err := strconv.Atoi(questionIdStr)
 	if err != nil {
-		return &proto.Empty{}, status.Error(codes.InvalidArgument, err.Error())
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "question not fount: %v", questionIdStr)
 	}
 	question, err := m.db.GetQuestion(ctx, questionId)
 	if err != nil {
@@ -302,7 +302,7 @@ func (m *Manager) GetSubmissions(ctx context.Context, req *proto.GetSubmissionsR
 		username, usernameOk := filtersMap[usernameFilter]
 		questionIdStr, questionIdOk := filtersMap[questionIdFilter]
 
-		if questionId, err := strconv.Atoi(questionIdStr); questionIdOk && err != nil {
+		if questionId, err := strconv.Atoi(questionIdStr); questionIdOk && err == nil {
 			// to see user submissions in a given question
 			submissions, totalPage, err := m.db.GetUserSubmissions(ctx, userId, int32(questionId), true,
 				pageNumber, defaultPageSize)
@@ -310,6 +310,8 @@ func (m *Manager) GetSubmissions(ctx context.Context, req *proto.GetSubmissionsR
 				return nil, status.Error(codes.Internal, err.Error())
 			}
 			return &proto.GetSubmissionsResponse{Submissions: submissions, TotalPageSize: int64(totalPage)}, err
+		} else if err != nil {
+			return nil, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
 		}
 		if usernameOk {
 			//to see given username's all submissions in all questions
@@ -354,7 +356,21 @@ func (m *Manager) EditQuestion(ctx context.Context, question *proto.Question) (*
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if question.GetOwner() != username {
+	if question.Id == nil {
+		return &proto.Empty{}, status.Error(codes.InvalidArgument, "question id not provided")
+	}
+	qId, err := strconv.Atoi(*question.Id)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "question not found")
+	}
+	q, err := m.db.GetQuestion(ctx, qId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.Empty{}, status.Error(codes.NotFound, "question not found")
+		}
+		return &proto.Empty{}, status.Error(codes.Internal, err.Error())
+	}
+	if q.GetOwner() != username {
 		return nil, status.Error(codes.PermissionDenied, "you do not have access to this question")
 	}
 
@@ -380,7 +396,7 @@ func (m *Manager) ChangeQuestionState(ctx context.Context, req *proto.ChangeQues
 	questionIdStr := req.QuestionId
 	questionId, err := strconv.Atoi(questionIdStr)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
 	}
 	newState := req.GetState()
 	if newState == proto.QuestionState_QUESTION_STATE_UNKNOWN {
@@ -408,7 +424,7 @@ func (m *Manager) UpdateSubmission(ctx context.Context, submission *proto.Submis
 	submissionIdStr := submission.GetId()
 	submissionId, err := strconv.Atoi(submissionIdStr)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.NotFound, "submission not found: %v", submissionIdStr)
 	}
 	updated, err := m.db.UpdateSubmissionState(ctx, int32(submissionId), int32(newState))
 	if err != nil {
