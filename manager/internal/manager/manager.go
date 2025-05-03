@@ -254,7 +254,7 @@ func (m *Manager) Submit(ctx context.Context, req *proto.SubmitRequest) (*proto.
 	questionIdStr := submission.GetQuestionId()
 	questionId, err := strconv.Atoi(questionIdStr)
 	if err != nil {
-		return &proto.Empty{}, status.Errorf(codes.NotFound, "question not fount: %v", questionIdStr)
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
 	}
 	question, err := m.db.GetQuestion(ctx, questionId)
 	if err != nil {
