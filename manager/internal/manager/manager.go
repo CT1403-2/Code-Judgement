@@ -74,8 +74,14 @@ func (m *Manager) ChangeRole(ctx context.Context, req *proto.ChangeRoleRequest) 
 	}
 	targetUsername := req.GetUsername()
 	targetUserId, oldTargetRole, err := m.db.GetUserRoleByUsername(ctx, targetUsername)
-	if err != nil || oldTargetRole == proto.Role_ROLE_UNKNOWN {
-		return nil, status.Error(codes.Internal, "")
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.Empty{}, status.Error(codes.NotFound, "username not found")
+		}
+		return &proto.Empty{}, status.Error(codes.Internal, err.Error())
+	}
+	if oldTargetRole == proto.Role_ROLE_UNKNOWN {
+		return nil, status.Error(codes.Internal, "old target role not found")
 	}
 	newTargetRole := req.GetRole()
 	if newTargetRole == proto.Role_ROLE_UNKNOWN {
