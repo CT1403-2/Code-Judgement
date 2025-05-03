@@ -29,7 +29,7 @@ type Repository interface {
 	UpdateUserRole(ctx context.Context, userId int32, role proto.Role) error
 	GetUsernames(ctx context.Context, pageNumber, pageSize int) ([]string, int, error)
 	GetUserStats(ctx context.Context, userId int32) (int64, int64, error)
-	GetQuestions(ctx context.Context, published bool, pageNumber, pageSize int) ([]*proto.Question, int, error)
+	GetQuestions(ctx context.Context, publishedOnly bool, pageNumber, pageSize int) ([]*proto.Question, int, error)
 	GetUserQuestions(ctx context.Context, userId int32,
 		username string, pageNumber, pageSize int) ([]*proto.Question, int, error)
 	GetQuestion(ctx context.Context, questionId int) (*proto.Question, error)
@@ -198,7 +198,7 @@ func (p *postgresqlRepository) GetUsernames(ctx context.Context, pageNumber, pag
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
 
 	if totalPage == 0 {
-		return nil, 0, pgx.ErrNoRows
+		return []string{}, 0, nil
 	}
 
 	if pageNumber > totalPage {
@@ -262,11 +262,9 @@ func (p *postgresqlRepository) GetQuestions(ctx context.Context, publishedOnly b
 	}
 
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
-
 	if totalPage == 0 {
-		return nil, 0, pgx.ErrNoRows
+		return []*proto.Question{}, totalPage, nil
 	}
-
 	if pageNumber > totalPage {
 		return nil, 0, errors.New("out of bounds page number")
 	}
@@ -306,7 +304,7 @@ func (p *postgresqlRepository) GetUserQuestions(ctx context.Context, userId int3
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
 
 	if totalPage == 0 {
-		return nil, 0, pgx.ErrNoRows
+		return []*proto.Question{}, 0, nil
 	}
 
 	if pageNumber > totalPage {
@@ -528,7 +526,7 @@ func (p *postgresqlRepository) GetSubmissionsWithState(ctx context.Context, stat
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
 
 	if totalPage == 0 {
-		return nil, 0, pgx.ErrNoRows
+		return []*proto.Submission{}, 0, nil
 	}
 
 	if pageNumber > totalPage {
@@ -583,7 +581,7 @@ func (p *postgresqlRepository) GetUserSubmissions(ctx context.Context, userId in
 	totalPage := int(math.Ceil(float64(count) / float64(pageSize)))
 
 	if totalPage == 0 {
-		return nil, 0, pgx.ErrNoRows
+		return []*proto.Submission{}, 0, nil
 	}
 
 	if pageNumber > totalPage {

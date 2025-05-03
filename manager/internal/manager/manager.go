@@ -169,7 +169,7 @@ func (m *Manager) GetStatsRequest(ctx context.Context, req *proto.ID) (*proto.Ge
 func (m *Manager) GetQuestions(ctx context.Context, req *proto.GetQuestionsRequest) (*proto.GetQuestionsResponse, error) {
 	var pageNumber, totalPage int
 	var str string
-	var isOwner, published bool
+	var isOwner, publishedOnly bool
 	var questions []*proto.Question
 
 	userId, _, err := authenticate(ctx)
@@ -193,10 +193,10 @@ func (m *Manager) GetQuestions(ctx context.Context, req *proto.GetQuestionsReque
 	} else {
 		isOwner = true
 	}
-	published = isAdmin(role)
+	publishedOnly = !isAdmin(role)
 
 	if !isOwner {
-		questions, totalPage, err = m.db.GetQuestions(ctx, published, pageNumber, defaultPageSize)
+		questions, totalPage, err = m.db.GetQuestions(ctx, publishedOnly, pageNumber, defaultPageSize)
 	} else {
 		questions, totalPage, err = m.db.GetUserQuestions(ctx, userId, username, pageNumber, defaultPageSize)
 	}

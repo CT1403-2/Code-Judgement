@@ -386,7 +386,7 @@ func TestSubmission(t *testing.T) {
 		wrongQuestionId := int32(-1)
 		submissions, totalPage, err := repo.GetUserSubmissions(repo.ctx, userId, wrongQuestionId, true,
 			pageNumber, pageSize)
-		require.Error(t, err)
+		require.NoError(t, err)
 		require.Equal(t, 0, totalPage)
 		require.Len(t, submissions, 0)
 	})
