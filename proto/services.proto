@@ -20,7 +20,7 @@ service Manager{
   rpc EditQuestion(Question) returns (Empty) {}
   rpc ChangeQuestionState(ChangeQuestionStateRequest) returns (Empty) {}
 
-  rpc UpdateSubmission(Submission) returns (Empty) {}
+  rpc UpdateSubmission(Submission) returns (UpdateSubmissionResponse) {}
 }
 
 message AuthenticationRequest{
@@ -80,6 +80,7 @@ message Question {
   optional string input = 5;
   optional string output = 6;
   QuestionState state = 7;
+  string owner = 8;
 }
 
 message Limitations {
@@ -98,6 +99,7 @@ message GetQuestionsRequest {
 
 message GetQuestionsResponse {
   repeated Question questions = 1;
+  int64 total_page_size = 2;
 }
 
 message GetQuestionResponse {
@@ -122,6 +124,7 @@ enum SubmissionState {
   SUBMISSION_STATE_MEMORY_LIMIT_EXCEEDED = 6;
   SUBMISSION_STATE_TIME_LIMIT_EXCEEDED = 7;
   SUBMISSION_STATE_RUNTIME_ERROR = 8;
+  SUBMISSION_STATE_FAILED = 9;
 }
 
 message Submission {
@@ -133,6 +136,7 @@ message Submission {
 
 message GetSubmissionsResponse {
   repeated Submission submissions = 1;
+  int64 total_page_size = 2;
 }
 
 message ID {
@@ -147,4 +151,8 @@ message ChangeQuestionStateRequest {
 message UpdateSubmissionRequest {
   string submission_id = 1;
   SubmissionState state = 2;
+}
+
+message UpdateSubmissionResponse {
+  bool updated = 1;
 }

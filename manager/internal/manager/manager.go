@@ -3,12 +3,14 @@ package manager
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"manger/internal"
 	"manger/internal/database"
+	"strconv"
 )
 
 type Manager struct {
@@ -21,23 +23,21 @@ func NewManager() (*Manager, error) {
 	return &Manager{db: db}, err
 }
 
-func (m *Manager) Start() error {
-	panic("implement me")
-}
-
-func (m *Manager) Stop() error {
-	panic("implement me")
-}
-
 func (m *Manager) Register(ctx context.Context, authRequest *proto.AuthenticationRequest) (*proto.AuthenticationResponse, error) {
 	username := authRequest.GetUsername()
+	if len(username) < usernameMinLength {
+		return nil, status.Error(codes.InvalidArgument, "username too short")
+	}
 	password := authRequest.GetPassword()
+	if len(password) < passwordMinLength {
+		return nil, status.Error(codes.InvalidArgument, "password too short")
+	}
 	userId, err := m.db.CreateMember(ctx, username, password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.AlreadyExists, "Username already exists")
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, getCodeOrInternalError(err)
 	}
 	jwtToken, err := internal.GenerateJWT(userId, proto.Role_ROLE_MEMBER.String())
 	if err != nil {
@@ -54,7 +54,7 @@ func (m *Manager) Login(ctx context.Context, authRequest *proto.AuthenticationRe
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.Unauthenticated, "invalid credentials")
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, getCodeOrInternalError(err)
 	}
 	jwtToken, err := internal.GenerateJWT(userId, proto.Role_name[roleType])
 	if err != nil {
@@ -64,18 +64,24 @@ func (m *Manager) Login(ctx context.Context, authRequest *proto.AuthenticationRe
 }
 
 func (m *Manager) ChangeRole(ctx context.Context, req *proto.ChangeRoleRequest) (*proto.Empty, error) {
-	userId, err := GetUserIdFromToken(ctx)
+	userId, _, err := authenticate(ctx)
 	if err != nil {
 		return &proto.Empty{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 	_, requesterRole, err := m.db.GetUserRole(ctx, userId)
 	if err != nil || requesterRole == proto.Role_ROLE_UNKNOWN {
-		return &proto.Empty{}, status.Error(codes.Internal, "")
+		return &proto.Empty{}, getCodeOrInternalError(errors.New(""))
 	}
 	targetUsername := req.GetUsername()
 	targetUserId, oldTargetRole, err := m.db.GetUserRoleByUsername(ctx, targetUsername)
-	if err != nil || oldTargetRole == proto.Role_ROLE_UNKNOWN {
-		return nil, status.Error(codes.Internal, "")
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.Empty{}, status.Error(codes.NotFound, "username not found")
+		}
+		return &proto.Empty{}, getCodeOrInternalError(err)
+	}
+	if oldTargetRole == proto.Role_ROLE_UNKNOWN {
+		return nil, status.Error(codes.Internal, "old target role not found")
 	}
 	newTargetRole := req.GetRole()
 	if newTargetRole == proto.Role_ROLE_UNKNOWN {
@@ -99,7 +105,7 @@ func (m *Manager) ChangeRole(ctx context.Context, req *proto.ChangeRoleRequest) 
 	err = m.db.UpdateUserRole(ctx, targetUserId, newTargetRole)
 
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, getCodeOrInternalError(err)
 	}
 	return &proto.Empty{}, status.Error(codes.OK, "Changed Successfully")
 }
@@ -107,13 +113,13 @@ func (m *Manager) ChangeRole(ctx context.Context, req *proto.ChangeRoleRequest) 
 func (m *Manager) GetProfile(ctx context.Context, req *proto.ID) (*proto.GetProfileResponse, error) {
 	username := req.GetValue()
 	if username == "" { //return client username and role
-		userId, err := GetUserIdFromToken(ctx)
+		userId, _, err := authenticate(ctx)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
 		username, role, err := m.db.GetUserRole(ctx, userId)
 		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, getCodeOrInternalError(err)
 		}
 		return &proto.GetProfileResponse{Username: username, Role: role}, nil
 
@@ -123,56 +129,349 @@ func (m *Manager) GetProfile(ctx context.Context, req *proto.ID) (*proto.GetProf
 			if errors.Is(err, pgx.ErrNoRows) {
 				return nil, status.Error(codes.NotFound, "user not found")
 			}
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, getCodeOrInternalError(err)
 		}
 		return &proto.GetProfileResponse{Username: username, Role: role}, nil
 	}
 }
 
-func (m *Manager) GetProfiles(ctx context.Context, req *proto.Empty) (*proto.GetProfilesResponse, error) {
-	var pageNumber, pageSize int32
-	usernames, totalPage, err := m.db.GetUsernames(ctx, pageNumber, pageSize)
+func (m *Manager) GetProfiles(ctx context.Context, req *proto.GetProfilesRequest) (*proto.GetProfilesResponse, error) {
+	var pageNumber int
+	filtersMap := getFiltersMap(req.GetFilters())
+	var str string
+	str, ok := filtersMap[pageNumberName]
+	pageNumber, err := strconv.Atoi(str)
+
+	if !ok || err != nil || pageNumber < 1 {
+		pageNumber = defaultPageNumber
+	}
+
+	usernames, totalPage, err := m.db.GetUsernames(ctx, pageNumber, defaultPageSize)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "")
+		return nil, getCodeOrInternalError(err)
 	}
 	return &proto.GetProfilesResponse{Usernames: usernames, TotalPageSize: int64(totalPage)}, nil
 }
+
 func (m *Manager) GetStatsRequest(ctx context.Context, req *proto.ID) (*proto.GetStatsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStatsRequest not implemented")
-}
-func (m *Manager) GetQuestions(ctx context.Context, req *proto.GetQuestionsRequest) (*proto.GetQuestionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetQuestions not implemented")
-}
-func (m *Manager) GetQuestion(ctx context.Context, req *proto.ID) (*proto.GetQuestionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetQuestion not implemented")
-}
-func (m *Manager) Submit(ctx context.Context, req *proto.SubmitRequest) (*proto.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Submit not implemented")
-}
-func (m *Manager) GetSubmissions(ctx context.Context, req *proto.GetSubmissionsRequest) (*proto.GetSubmissionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSubmissions not implemented")
-}
-func (m *Manager) CreateQuestion(ctx context.Context, req *proto.Question) (*proto.ID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateQuestion not implemented")
-}
-func (m *Manager) EditQuestion(ctx context.Context, req *proto.Question) (*proto.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EditQuestion not implemented")
-}
-func (m *Manager) ChangeQuestionState(ctx context.Context, req *proto.ChangeQuestionStateRequest) (*proto.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChangeQuestionState not implemented")
-}
-func (m *Manager) UpdateSubmission(ctx context.Context, req *proto.Submission) (*proto.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateSubmission not implemented")
+	username := req.GetValue()
+	userId, _, err := m.db.GetUserRoleByUsername(ctx, username)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.GetStatsResponse{}, status.Error(codes.NotFound, "user not found")
+		}
+		return &proto.GetStatsResponse{}, getCodeOrInternalError(err)
+	}
+	triedCount, successCount, err := m.db.GetUserStats(ctx, userId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.GetStatsResponse{}, status.Error(codes.NotFound, "user not found")
+		}
+		return &proto.GetStatsResponse{}, getCodeOrInternalError(err)
+	}
+	return &proto.GetStatsResponse{TriedQuestions: triedCount, SolvedQuestions: successCount}, nil
 }
 
-func GetUserIdFromToken(ctx context.Context) (int32, error) {
-	token, err := internal.ExtractJWTFromContext(ctx)
+func (m *Manager) GetQuestions(ctx context.Context, req *proto.GetQuestionsRequest) (*proto.GetQuestionsResponse, error) {
+	var pageNumber, totalPage int
+	var str string
+	var isOwner, publishedOnly bool
+	var questions []*proto.Question
+
+	userId, _, err := authenticate(ctx)
 	if err != nil {
-		return 0, err
+		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
-	userId, _, err := internal.ValidateJWT(token)
+	username, role, err := m.db.GetUserRole(ctx, userId)
 	if err != nil {
-		return 0, err
+		return nil, getCodeOrInternalError(err)
 	}
-	return userId, nil
+
+	filtersMap := getFiltersMap(req.GetFilters())
+	str, ok := filtersMap[pageNumberName]
+	pageNumber, err = strconv.Atoi(str)
+	if !ok || err != nil || pageNumber < 1 {
+		pageNumber = defaultPageNumber
+	}
+	str, ok = filtersMap[questionOwnerFilter]
+	if !ok || str == "false" {
+		isOwner = false
+	} else {
+		isOwner = true
+	}
+	publishedOnly = !isAdmin(role)
+
+	if !isOwner {
+		questions, totalPage, err = m.db.GetQuestions(ctx, publishedOnly, pageNumber, defaultPageSize)
+	} else {
+		questions, totalPage, err = m.db.GetUserQuestions(ctx, userId, username, pageNumber, defaultPageSize)
+	}
+	if err != nil {
+		return nil, getCodeOrInternalError(err)
+	}
+	return &proto.GetQuestionsResponse{Questions: questions, TotalPageSize: int64(totalPage)}, nil
+}
+
+func (m *Manager) GetQuestion(ctx context.Context, req *proto.ID) (*proto.GetQuestionResponse, error) {
+	userId, isJudge, err := authenticate(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	var username string
+	var role proto.Role
+	if !isJudge {
+		username, role, err = m.db.GetUserRole(ctx, userId)
+		if err != nil {
+			return nil, getCodeOrInternalError(err)
+		}
+	}
+	questionId, err := strconv.Atoi(req.Value)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "question not found: %v", req.Value)
+	}
+	question, err := m.db.GetQuestion(ctx, questionId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, "question not found")
+		}
+		return nil, getCodeOrInternalError(err)
+	}
+
+	if !isJudge && !isAdmin(role) && username != question.GetOwner() {
+		question.Input = nil
+		question.Output = nil
+	}
+	return &proto.GetQuestionResponse{Question: question}, status.Error(codes.OK, "")
+}
+
+func (m *Manager) Submit(ctx context.Context, req *proto.SubmitRequest) (*proto.Empty, error) {
+	userId, _, err := authenticate(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	submission := req.GetSubmission()
+	questionIdStr := submission.GetQuestionId()
+	questionId, err := strconv.Atoi(questionIdStr)
+	if err != nil {
+		return &proto.Empty{}, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
+	}
+	question, err := m.db.GetQuestion(ctx, questionId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.Empty{}, status.Error(codes.NotFound, "question not found")
+		}
+		return &proto.Empty{}, getCodeOrInternalError(err)
+	}
+	if question.GetState() != proto.QuestionState_QUESTION_STATE_PUBLISHED {
+		return &proto.Empty{}, status.Error(codes.PermissionDenied, "question is not published")
+	}
+
+	code := submission.GetCode()
+
+	err = m.db.CreateSubmission(ctx, userId, int32(questionId), code)
+	if err != nil {
+		return nil, getCodeOrInternalError(err)
+	}
+	return &proto.Empty{}, status.Error(codes.OK, "")
+}
+
+func (m *Manager) GetSubmissions(ctx context.Context, req *proto.GetSubmissionsRequest) (*proto.GetSubmissionsResponse, error) {
+	userId, isJudge, err := authenticate(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	filtersMap := getFiltersMap(req.GetFilters())
+
+	str, ok := filtersMap[pageNumberName]
+	pageNumber, err := strconv.Atoi(str)
+
+	if !ok || err != nil || pageNumber < 1 {
+		pageNumber = defaultPageNumber
+	}
+	if isJudge {
+		stateName, ok := filtersMap[stateFilter]
+		if ok {
+			state := proto.SubmissionState_value[stateName]
+			submissions, totalPage, err := m.db.GetSubmissionsWithState(ctx, state, pageNumber, defaultPageSize)
+			return &proto.GetSubmissionsResponse{Submissions: submissions, TotalPageSize: int64(totalPage)}, err
+		} else {
+			return nil, status.Error(codes.Unimplemented, "judge server gets submission without state filter not implemented")
+		}
+	} else {
+		username, usernameOk := filtersMap[usernameFilter]
+		questionIdStr, questionIdOk := filtersMap[questionIdFilter]
+
+		if questionId, err := strconv.Atoi(questionIdStr); questionIdOk && err == nil {
+			// to see user submissions in a given question
+			submissions, totalPage, err := m.db.GetUserSubmissions(ctx, userId, int32(questionId), true,
+				pageNumber, defaultPageSize)
+			if err != nil {
+				return nil, getCodeOrInternalError(err)
+			}
+			return &proto.GetSubmissionsResponse{Submissions: submissions, TotalPageSize: int64(totalPage)}, err
+		} else if questionIdOk {
+			return nil, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
+		}
+		if usernameOk {
+			//to see given username's all submissions in all questions
+			userId, _, err := m.db.GetUserRoleByUsername(ctx, username)
+			if err != nil {
+				if errors.Is(err, pgx.ErrNoRows) {
+					return nil, status.Error(codes.NotFound, "user not found")
+				}
+				return nil, getCodeOrInternalError(err)
+			}
+			submissions, totalPage, err := m.db.GetUserSubmissions(ctx, userId, 0, false,
+				pageNumber, defaultPageSize)
+			if err != nil {
+				return nil, getCodeOrInternalError(err)
+			}
+			return &proto.GetSubmissionsResponse{Submissions: submissions, TotalPageSize: int64(totalPage)}, nil
+		}
+		return nil, status.Error(codes.Unimplemented,
+			"case client get questions without question or username filter not implemented ")
+	}
+}
+
+func (m *Manager) CreateQuestion(ctx context.Context, question *proto.Question) (*proto.ID, error) {
+	userId, _, err := authenticate(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	questionId, err := m.db.CreateQuestion(ctx, userId, question)
+	if err != nil {
+		return nil, getCodeOrInternalError(err)
+	}
+	questionIdStr := fmt.Sprintf("%d", questionId)
+	return &proto.ID{Value: questionIdStr}, status.Error(codes.OK, "")
+}
+
+func (m *Manager) EditQuestion(ctx context.Context, question *proto.Question) (*proto.Empty, error) {
+	userId, _, err := authenticate(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	username, _, err := m.db.GetUserRole(ctx, userId)
+	if err != nil {
+		return nil, getCodeOrInternalError(err)
+	}
+	if question.Id == nil {
+		return &proto.Empty{}, status.Error(codes.InvalidArgument, "question id not provided")
+	}
+	qId, err := strconv.Atoi(*question.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "question not found: %v", *question.Id)
+	}
+	q, err := m.db.GetQuestion(ctx, qId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &proto.Empty{}, status.Error(codes.NotFound, "question not found")
+		}
+		return &proto.Empty{}, getCodeOrInternalError(err)
+	}
+	if q.GetOwner() != username {
+		return nil, status.Error(codes.PermissionDenied, "you do not have access to this question")
+	}
+
+	err = m.db.EditQuestion(ctx, question)
+	if err != nil {
+		return nil, getCodeOrInternalError(err)
+	}
+	return &proto.Empty{}, status.Error(codes.OK, "question edited successfully")
+}
+
+func (m *Manager) ChangeQuestionState(ctx context.Context, req *proto.ChangeQuestionStateRequest) (*proto.Empty, error) {
+	userId, _, err := authenticate(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+	_, role, err := m.db.GetUserRole(ctx, userId)
+	if err != nil {
+		return nil, getCodeOrInternalError(err)
+	}
+	if !isAdmin(role) {
+		return nil, status.Error(codes.PermissionDenied, "you are not an admin")
+	}
+	questionIdStr := req.QuestionId
+	questionId, err := strconv.Atoi(questionIdStr)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
+	}
+	newState := req.GetState()
+	if newState == proto.QuestionState_QUESTION_STATE_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid state: %s", newState))
+	}
+	err = m.db.ChangeQuestionState(ctx, questionId, int32(newState))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, "question not found")
+		}
+		return nil, getCodeOrInternalError(err)
+	}
+	return &proto.Empty{}, status.Error(codes.OK, "question state changed successfully")
+}
+
+func (m *Manager) UpdateSubmission(ctx context.Context, submission *proto.Submission) (*proto.UpdateSubmissionResponse, error) {
+	_, isJudge, err := authenticate(ctx)
+	if err != nil || !isJudge {
+		return nil, status.Error(codes.Unauthenticated, "invalid token")
+	}
+	newState := submission.GetState()
+	if newState == proto.SubmissionState_SUBMISSION_STATE_UNKNOWN {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid state: %s", newState)
+	}
+	submissionIdStr := submission.GetId()
+	submissionId, err := strconv.Atoi(submissionIdStr)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "submission not found: %v", submissionIdStr)
+	}
+	updated, err := m.db.UpdateSubmissionState(ctx, int32(submissionId), int32(newState))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "submission not found")
+		}
+		return nil, getCodeOrInternalError(err)
+	}
+
+	return &proto.UpdateSubmissionResponse{Updated: updated}, status.Errorf(codes.OK, "")
+}
+
+func authenticate(ctx context.Context) (userId int32, isJudge bool, err error) {
+	tokenType, token, err := internal.ExtractTokenFromContext(ctx)
+	if err != nil {
+		return 0, false, err
+	}
+	if tokenType == "Bearer" {
+		userId, _, err := internal.ValidateJWT(token)
+		if err != nil {
+			return 0, false, err
+		}
+		return userId, false, nil
+
+	} else if tokenType == "Token" {
+		isJudge := internal.IsJudgeServer(token)
+		return 0, isJudge, nil
+	}
+	return 0, false, nil
+}
+
+func getFiltersMap(filters []*proto.Filter) map[string]string {
+	m := make(map[string]string)
+	for _, filter := range filters {
+		m[filter.Field] = filter.Value
+	}
+	return m
+}
+
+func isAdmin(role proto.Role) bool {
+	return role == proto.Role_ROLE_ADMIN || role == proto.Role_ROLE_SUPERUSER
+}
+
+func getCodeOrInternalError(err error) error {
+	code := status.Code(err)
+	if code != codes.Unknown {
+		return err
+	}
+	return status.Error(codes.Internal, err.Error())
 }

@@ -35,10 +35,21 @@ CREATE TABLE questions (
 
 CREATE TABLE submissions (
     id SERIAL PRIMARY KEY,
-    code TEXT,
+    code BYTEA,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
     state INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT now()
+    retry_count INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    state_updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX idx_questions_owner ON questions (owner);
+
+CREATE INDEX idx_questions_state ON questions (state, owner);
+
+CREATE INDEX idx_submissions_state ON submissions (state);
+
+CREATE INDEX idx_submissions_user_question ON submissions (user_id, question_id);
+
+CREATE INDEX idx_submissions_user_state_question ON submissions (user_id, state, question_id)

@@ -38,8 +38,8 @@ func (c *controller) judgePendingSubmissions(ctx context.Context) {
 		default:
 			time.Sleep(10 * time.Millisecond)
 			ctxWithTimeout, cancel := context.WithTimeout(ctx, c.config.Manager.Timeout)
-
-			submissions, err := c.client.GetSubmissions(ctxWithTimeout, &proto.GetSubmissionsRequest{Filters: []*proto.Filter{{Field: "state", Value: "PENDING"}}})
+			pendingState := proto.SubmissionState_SUBMISSION_STATE_PENDING.String()
+			submissions, err := c.client.GetSubmissions(ctxWithTimeout, &proto.GetSubmissionsRequest{Filters: []*proto.Filter{{Field: "state", Value: pendingState}}})
 			if err != nil {
 				logrus.WithError(err).Error("couldn't get submissions")
 			}
