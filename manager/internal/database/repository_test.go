@@ -434,12 +434,52 @@ func TestSubmission(t *testing.T) {
 		require.True(t, updated)
 	})
 
+	t.Run("test judge timeout reset state success", func(t *testing.T) {
+		submitQuery := `INSERT INTO submissions (question_id, user_id, state)
+			VALUES ($1, $2, $3) RETURNING id`
+		var subId int32
+
+		err := repo.pool.QueryRow(repo.ctx, submitQuery, questionId, userId,
+			proto.SubmissionState_SUBMISSION_STATE_JUDGING).Scan(&subId)
+		require.NoError(t, err)
+		require.NotZero(t, subId)
+
+		err = repo.handleSubmissionJudgingTimeout(repo.ctx, 2, subId)
+		require.NoError(t, err)
+		var state, retryCount int
+		err = repo.pool.QueryRow(repo.ctx,
+			`SELECT state, retry_count FROM submissions WHERE id = $1`, subId).Scan(&state, &retryCount)
+		require.NoError(t, err)
+		require.Equal(t, int(proto.SubmissionState_SUBMISSION_STATE_PENDING), state)
+		require.Equal(t, 1, retryCount)
+	})
+
+	t.Run("test judge reach max timeout, set state to failed", func(t *testing.T) {
+		submitQuery := `INSERT INTO submissions (question_id, user_id, state, retry_count)
+			VALUES ($1, $2, $3, $4) RETURNING id`
+		var subId int32
+
+		err := repo.pool.QueryRow(repo.ctx, submitQuery, questionId, userId,
+			proto.SubmissionState_SUBMISSION_STATE_JUDGING, MaxJudgeTryCount-1).Scan(&subId)
+		require.NoError(t, err)
+		require.NotZero(t, subId)
+
+		err = repo.handleSubmissionJudgingTimeout(repo.ctx, 2, subId)
+		require.NoError(t, err)
+		var state, retryCount int
+		err = repo.pool.QueryRow(repo.ctx,
+			`SELECT state, retry_count FROM submissions WHERE id = $1`, subId).Scan(&state, &retryCount)
+		require.NoError(t, err)
+		require.Equal(t, int(proto.SubmissionState_SUBMISSION_STATE_FAILED), state)
+		require.Equal(t, 5, retryCount)
+	})
+
 	t.Run("test update submission state fail, submission already in target state", func(t *testing.T) {
 		submissions, totalPage, err := repo.GetUserSubmissions(repo.ctx, userId, 0, false,
 			pageNumber, pageSize)
 		require.NoError(t, err)
 		require.Equal(t, 1, totalPage)
-		require.Len(t, submissions, 2)
+		require.Len(t, submissions, 4)
 
 		s := submissions[0]
 		require.Equal(t, proto.SubmissionState_SUBMISSION_STATE_OK, *s.State)
@@ -455,7 +495,7 @@ func TestSubmission(t *testing.T) {
 		submissions, totalPage, err := repo.GetSubmissionsWithState(repo.ctx, pending, pageNumber, pageSize)
 		require.NoError(t, err)
 		require.Equal(t, 1, totalPage)
-		require.Len(t, submissions, 1)
+		require.Len(t, submissions, 2)
 		for _, s := range submissions {
 			require.Equal(t, proto.SubmissionState_SUBMISSION_STATE_PENDING, *s.State)
 		}

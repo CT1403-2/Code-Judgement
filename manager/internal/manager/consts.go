@@ -7,7 +7,7 @@ const (
 	questionOwnerFilter = "owner"
 	stateFilter         = "state"
 	usernameFilter      = "username"
-	questionIdFilter    = "question_id"
+	questionIdFilter    = "questionId"
 	usernameMinLength   = 4
 	passwordMinLength   = 8
 )

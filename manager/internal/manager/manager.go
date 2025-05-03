@@ -264,7 +264,7 @@ func (m *Manager) Submit(ctx context.Context, req *proto.SubmitRequest) (*proto.
 		return &proto.Empty{}, getCodeOrInternalError(err)
 	}
 	if question.GetState() != proto.QuestionState_QUESTION_STATE_PUBLISHED {
-		return &proto.Empty{}, status.Error(codes.FailedPrecondition, "question is not published")
+		return &proto.Empty{}, status.Error(codes.PermissionDenied, "question is not published")
 	}
 
 	code := submission.GetCode()
@@ -310,7 +310,7 @@ func (m *Manager) GetSubmissions(ctx context.Context, req *proto.GetSubmissionsR
 				return nil, getCodeOrInternalError(err)
 			}
 			return &proto.GetSubmissionsResponse{Submissions: submissions, TotalPageSize: int64(totalPage)}, err
-		} else if err != nil {
+		} else if questionIdOk {
 			return nil, status.Errorf(codes.NotFound, "question not found: %v", questionIdStr)
 		}
 		if usernameOk {
@@ -434,7 +434,7 @@ func (m *Manager) UpdateSubmission(ctx context.Context, submission *proto.Submis
 		return nil, getCodeOrInternalError(err)
 	}
 
-	return &proto.UpdateSubmissionResponse{Updated: updated}, status.Errorf(codes.Unimplemented, "method UpdateSubmission not implemented")
+	return &proto.UpdateSubmissionResponse{Updated: updated}, status.Errorf(codes.OK, "")
 }
 
 func authenticate(ctx context.Context) (userId int32, isJudge bool, err error) {

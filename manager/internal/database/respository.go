@@ -313,7 +313,7 @@ func (p *postgresqlRepository) GetUserQuestions(ctx context.Context, userId int3
 		return nil, 0, status.Error(codes.NotFound, "out of bounds page number")
 	}
 	var questions []*proto.Question
-	rows, err := p.pool.Query(ctx, getUserQuestionsQuery, userId, offset, pageNumber)
+	rows, err := p.pool.Query(ctx, getUserQuestionsQuery, userId, offset, pageSize)
 	if err != nil {
 		return nil, totalPage, fmt.Errorf("failed to execute query: %v", err)
 	}
@@ -468,20 +468,22 @@ func (p *postgresqlRepository) UpdateSubmissionState(ctx context.Context, submis
 	if err := tx.Commit(ctx); err != nil {
 		return false, err
 	}
-	go func() {
-		if err := p.handleSubmissionJudgingTimeout(ctx, submissionId); err != nil {
-			log.Printf("timeout handling failed for submission %d: %v", submissionId, err)
-		}
-	}()
+	if state == int32(proto.SubmissionState_SUBMISSION_STATE_JUDGING) {
+		go func() {
+			if err := p.handleSubmissionJudgingTimeout(p.ctx, JudgeTimeout, submissionId); err != nil {
+				log.Printf("timeout handling failed for submission %d: %v", submissionId, err)
+			}
+		}()
+	}
 
 	return true, nil
 }
 
-func (p *postgresqlRepository) handleSubmissionJudgingTimeout(ctx context.Context, submissionId int32) error {
+func (p *postgresqlRepository) handleSubmissionJudgingTimeout(ctx context.Context, timeoutSeconds int, submissionId int32) error {
 	select {
 	case <-ctx.Done():
 		return nil
-	case <-time.After(JudgeTimeout * time.Second):
+	case <-time.After(time.Duration(timeoutSeconds) * time.Second):
 		tx, err := p.pool.Begin(ctx)
 		if err != nil {
 			return err
@@ -494,13 +496,13 @@ func (p *postgresqlRepository) handleSubmissionJudgingTimeout(ctx context.Contex
 		if err != nil {
 			return err
 		}
-		if sub.stateUpdatedAt.After(time.Now().Add(-JudgeTimeout * time.Second)) {
+		if sub.stateUpdatedAt.After(time.Now().Add(-time.Duration(timeoutSeconds) * time.Second)) {
 			return nil
 		}
 		if sub.state == int32(proto.SubmissionState_SUBMISSION_STATE_JUDGING) {
 			sub.retryCount++
 			newState := proto.SubmissionState_SUBMISSION_STATE_PENDING
-			if sub.retryCount == MaxJudgeTryCount {
+			if sub.retryCount >= MaxJudgeTryCount {
 				newState = proto.SubmissionState_SUBMISSION_STATE_FAILED
 			}
 			_, err := tx.Exec(ctx, updateSubmissionStateQuery, submissionId, newState, sub.retryCount)
@@ -536,7 +538,7 @@ func (p *postgresqlRepository) GetSubmissionsWithState(ctx context.Context, stat
 	}
 
 	var submissions []*proto.Submission
-	rows, err := p.pool.Query(ctx, getSubmissionsWithStateQuery, state, offset, pageNumber)
+	rows, err := p.pool.Query(ctx, getSubmissionsWithStateQuery, state, offset, pageSize)
 	if err != nil {
 		return nil, totalPage, fmt.Errorf("failed to execute query: %v", err)
 	}
