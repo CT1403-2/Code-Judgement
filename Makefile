@@ -23,6 +23,16 @@ dependencies:
 		echo "protoc installed: $$(protoc --version)"; \
 	fi
 
+	@if command -v migrate >/dev/null 2>&1; then \
+		echo "">/dev/null; \
+	else \
+		go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.3; \
+	fi
+
+database:
+	PGPASSWORD=$(password) psql -U $(username) -f ./manager/internal/database/migrations/create_table.sql; \
+    migrate -database postgres://$(username):$(password)@localhost:5432/judge_db?sslmode=disable -path ./manager/internal/database/migrations up
+
 generate:
 	protoc -I ./proto/ services.proto --go_out=./ --go-grpc_out=./
 	go generate ./judge/...
