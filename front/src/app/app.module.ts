@@ -36,10 +36,10 @@ import { ErrorComponent } from './components/error/error.component';
     QuestionDetailComponent,
     SubmissionListComponent,
     TableComponent,
-    ErrorComponent,
+    ErrorComponent
   ],
   imports: [BrowserModule, FormsModule, NgChartjsModule, AppRoutingModule],
   providers: [],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
 export class AppModule {}

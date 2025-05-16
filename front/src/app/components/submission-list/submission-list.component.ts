@@ -1,13 +1,18 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Filter, Submission, SubmissionState } from '../../services/services';
 import { Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
+import {
+  Filter,
+  GetSubmissionsRequest,
+  Submission,
+  SubmissionState
+} from '../../services/proto/services_pb';
 
 @Component({
   selector: 'app-submission-list',
   standalone: false,
   templateUrl: './submission-list.component.html',
-  styleUrl: './submission-list.component.css',
+  styleUrl: './submission-list.component.css'
 })
 export class SubmissionListComponent implements OnInit {
   stateTitles: { [key in SubmissionState]?: string } = {
@@ -21,17 +26,17 @@ export class SubmissionListComponent implements OnInit {
       'Memory Limit Exceeded',
     [SubmissionState.SUBMISSION_STATE_TIME_LIMIT_EXCEEDED]:
       'Time Limit Exceeded',
-    [SubmissionState.SUBMISSION_STATE_RUNTIME_ERROR]: 'Runtime Error',
+    [SubmissionState.SUBMISSION_STATE_RUNTIME_ERROR]: 'Runtime Error'
   };
 
-  submissions!: Submission[];
+  submissions!: Submission.AsObject[];
 
   @Input()
   question?: string;
 
   constructor(
     private readonly router: Router,
-    private readonly manager: ManagerService,
+    private readonly manager: ManagerService
   ) {}
 
   gotoQuestion(question?: string) {
@@ -41,22 +46,28 @@ export class SubmissionListComponent implements OnInit {
   ngOnInit() {
     let filters: Filter[] = [];
     if (this.question) {
-      filters.push({
-        field: 'questionId',
-        value: this.question,
-      });
+      filters.push(
+        this.manager.create(new Filter(), {
+          field: 'questionId',
+          value: this.question
+        })
+      );
     }
     this.manager
-      .GetSubmissions({
-        filters: filters,
-      })
-      .then((res) => {
-        this.submissions = res.submissions.map((value) => {
-          let val = value as any;
-          val.stateTitle = this.stateTitles[value.state ?? 0];
-          return val as Submission;
+      .getSubmissions(
+        this.manager.create(new GetSubmissionsRequest(), {
+          filtersList: filters
+        })
+      )
+      .then(res => {
+        this.submissions = res.getSubmissionsList().map(value => {
+          let val = value.toObject() as any;
+          val.stateTitle = this.stateTitles[
+            value.hasState() ? value.getState() : 0
+          ];
+          return val as Submission.AsObject;
         });
       })
-      .catch((err) => {});
+      .catch(err => {});
   }
 }

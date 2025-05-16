@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
+	"github.com/CT1403-2/Code-Judgement/manager/internal/manager"
 	"github.com/CT1403-2/Code-Judgement/proto"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/soheilhy/cmux"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"log"
-	"manger/internal/manager"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 )
 
 var serveCmd = &cobra.Command{
@@ -45,13 +48,29 @@ func server(port string) error {
 	httpL := m.Match(cmux.HTTP1Fast())
 
 	grpcServer := grpc.NewServer()
+	wrappedGrpc := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithAllowedRequestHeaders([]string{"x-grpc-web", "content-type"}),
+	)
 	man, err := manager.NewManager()
 	if err != nil {
 		return err
 	}
 	proto.RegisterManagerServer(grpcServer, man)
 
-	httpServer := &http.Server{Handler: http.FileServer(http.Dir("build/browser"))}
+	httpServer := &http.Server{
+		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
+				wrappedGrpc.ServeHTTP(resp, req)
+				return
+			}
+			filePath := filepath.Join("browser/build", req.URL.Path)
+			if _, err := os.Stat(filePath); err == nil {
+				http.ServeFile(resp, req, filePath)
+				return
+			}
+			http.ServeFile(resp, req, "browser/build/index.html")
+		}),
+	}
 
 	go func() {
 		log.Println("Starting grpc on " + port)

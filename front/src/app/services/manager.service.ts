@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
-import { RpcService } from './rpc.service';
-import { ManagerClientImpl } from './services';
+import { ManagerClient } from './proto/ServicesServiceClientPb';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
-export class ManagerService extends ManagerClientImpl {
-  constructor(rpc: RpcService) {
-    super(rpc, {
-      service: '',
-    });
+export class ManagerService extends ManagerClient {
+  constructor() {
+    super('/api');
+  }
+
+  create<T>(t: T, properties: Record<string, any>): T {
+    for (const key in properties) {
+      (t as any)[`set${key.replace(/^[a-z]/, match => match.toUpperCase())}`](
+        properties[key]
+      );
+    }
+    return t;
   }
 }

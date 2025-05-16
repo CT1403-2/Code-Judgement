@@ -2,12 +2,12 @@ package database
 
 import (
 	"fmt"
+	"github.com/CT1403-2/Code-Judgement/manager/internal"
 	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/require"
 	"log"
-	"manger/internal"
 	"os"
 	"strconv"
 	"testing"

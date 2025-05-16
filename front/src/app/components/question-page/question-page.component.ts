@@ -4,6 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-questions',
   standalone: false,
   templateUrl: './question-page.component.html',
-  styleUrl: './question-page.component.css',
+  styleUrl: './question-page.component.css'
 })
 export class QuestionPageComponent {}

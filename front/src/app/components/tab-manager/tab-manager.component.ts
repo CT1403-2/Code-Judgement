@@ -3,14 +3,14 @@ import {
   EventEmitter,
   Input,
   Output,
-  TemplateRef,
+  TemplateRef
 } from '@angular/core';
 
 @Component({
   selector: 'app-tab-manager',
   standalone: false,
   templateUrl: './tab-manager.component.html',
-  styleUrl: './tab-manager.component.css',
+  styleUrl: './tab-manager.component.css'
 })
 export class TabManagerComponent {
   @Input({ required: true })

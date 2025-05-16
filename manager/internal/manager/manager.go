@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/CT1403-2/Code-Judgement/manager/internal"
+	"github.com/CT1403-2/Code-Judgement/manager/internal/database"
 	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"manger/internal"
-	"manger/internal/database"
 	"strconv"
 )
 

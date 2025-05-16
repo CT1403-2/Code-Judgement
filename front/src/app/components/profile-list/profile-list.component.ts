@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
+import { GetProfilesRequest, ID } from '../../services/proto/services_pb';
+import * as grpcWeb from 'grpc-web';
 
 @Component({
   selector: 'app-profile-list',
   standalone: false,
   templateUrl: './profile-list.component.html',
-  styleUrl: './profile-list.component.css',
+  styleUrl: './profile-list.component.css'
 })
 export class ProfileListComponent implements OnInit {
   currentUser!: string;
@@ -14,7 +16,7 @@ export class ProfileListComponent implements OnInit {
 
   constructor(
     private readonly router: Router,
-    private readonly manager: ManagerService,
+    private readonly manager: ManagerService
   ) {}
 
   gotoMyProfile(tab: number) {
@@ -29,22 +31,31 @@ export class ProfileListComponent implements OnInit {
 
   ngOnInit() {
     this.manager
-      .GetProfile({
-        value: '',
+      .getProfile(
+        this.manager.create(new ID(), {
+          value: ''
+        })
+      )
+      .then(res => {
+        this.currentUser = res.getUsername();
       })
-      .then((res) => {
-        this.currentUser = res.username;
-      })
-      .catch((err) => {});
+      .catch((err: grpcWeb.RpcError) => {
+        if (err.code == grpcWeb.StatusCode.UNAUTHENTICATED) {
+          this.router.navigate(['']);
+        }
+      });
     this.manager
-      .GetProfiles({
-        filters: [],
-      })
-      .then((res) => {
-        this.profiles = res.usernames.map((user) => {
+      .getProfiles(
+        this.manager.create(new GetProfilesRequest(), {
+          filtersList: []
+        })
+      )
+      .then(res => {
+        this.profiles = res.getUsernamesList().map(user => {
           return { username: user };
         });
       })
-      .catch((err) => {});
+      .catch(err => {
+      });
   }
 }

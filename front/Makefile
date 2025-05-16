@@ -16,7 +16,9 @@ dependencies:
 	fi
 
 generate:
-	protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=./src/app/services -I ../proto/ services.proto
+	protoc -I=../proto services.proto \
+    --js_out=import_style=commonjs,binary:./src/app/services/proto \
+    --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/app/services/proto
 
 build:
 	ng build --output-path ../build --configuration production

@@ -14,11 +14,11 @@ const routes: Routes = [
   { path: 'profiles', component: ProfileListComponent },
   { path: 'profiles/:id', component: ProfileComponent },
   { path: 'error/:id', component: ErrorComponent },
-  { path: '**', redirectTo: '/error/404' },
+  { path: '**', redirectTo: '/error/404' }
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
+  exports: [RouterModule]
 })
 export class AppRoutingModule {}

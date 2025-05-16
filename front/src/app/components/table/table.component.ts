@@ -4,7 +4,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
   selector: 'app-table',
   standalone: false,
   templateUrl: './table.component.html',
-  styleUrl: './table.component.css',
+  styleUrl: './table.component.css'
 })
 export class TableComponent<T> implements OnInit {
   @Input({ required: true })
@@ -58,7 +58,7 @@ export class TableComponent<T> implements OnInit {
     const anyRow = row as any;
     const field = column
       .replace(/\s+/g, '')
-      .replace(/^./, (match) => match.toLowerCase());
+      .replace(/^./, match => match.toLowerCase());
     if (anyRow[`${field}Title`]) {
       return anyRow[`${field}Title`];
     } else {
