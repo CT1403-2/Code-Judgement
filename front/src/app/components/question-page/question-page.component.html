@@ -2,16 +2,21 @@
   [tabs]="[
     { title: 'All Questions', content: all },
     { title: 'My Questions', content: mine },
-    { title: 'Create New Question', content: new },
+    { title: 'Create New Question', content: create },
   ]"
+  (activeTabChange)="setQuestion()"
+  #tab
 >
 </app-tab-manager>
 <ng-template #all>
-  <app-question-list></app-question-list>
+  <app-question-list (action)="changeState($event)"></app-question-list>
 </ng-template>
 <ng-template #mine>
-  <app-question-list></app-question-list>
+  <app-question-list
+    [filterOwner]="true"
+    (action)="setQuestion($event); setTab(2)"
+  ></app-question-list>
 </ng-template>
-<ng-template #new>
-  <app-new-question></app-new-question>
+<ng-template #create>
+  <app-new-question #editor></app-new-question>
 </ng-template>

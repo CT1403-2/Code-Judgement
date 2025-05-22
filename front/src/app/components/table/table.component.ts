@@ -13,8 +13,8 @@ export class TableComponent<T> implements OnInit {
   @Input({ required: true })
   columns!: string[];
 
-  @Input()
-  pageSize: number = 5;
+  @Input({ required: true })
+  totalPages!: number;
 
   @Input()
   actionIcon?: string;
@@ -25,19 +25,17 @@ export class TableComponent<T> implements OnInit {
   @Output()
   action = new EventEmitter<T>();
 
+  @Output()
+  pageChange = new EventEmitter<number>();
+
   currentPage: number = 1;
-  totalPages: number = 1;
-  paginatedData: any[] = [];
 
   ngOnInit(): void {
     this.updatePagination();
   }
 
   updatePagination(): void {
-    this.totalPages = Math.ceil(this.data.length / this.pageSize);
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedData = this.data.slice(startIndex, endIndex);
+    this.pageChange.emit(this.currentPage);
   }
 
   nextPage(): void {

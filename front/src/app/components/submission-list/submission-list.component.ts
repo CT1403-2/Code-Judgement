@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
 import {
@@ -7,6 +7,7 @@ import {
   Submission,
   SubmissionState
 } from '../../services/proto/services_pb';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-submission-list',
@@ -14,7 +15,7 @@ import {
   templateUrl: './submission-list.component.html',
   styleUrl: './submission-list.component.css'
 })
-export class SubmissionListComponent implements OnInit {
+export class SubmissionListComponent {
   stateTitles: { [key in SubmissionState]?: string } = {
     [SubmissionState.SUBMISSION_STATE_UNKNOWN]: 'Unknown',
     [SubmissionState.SUBMISSION_STATE_PENDING]: 'Pending',
@@ -30,12 +31,17 @@ export class SubmissionListComponent implements OnInit {
   };
 
   submissions!: Submission.AsObject[];
+  totalPageCount!: number;
 
-  @Input()
-  question?: string;
+  @Input({ required: true })
+  filterType!: 'questionId' | 'username';
+
+  @Input({ required: true })
+  filterValue!: string;
 
   constructor(
     private readonly router: Router,
+    private readonly errHandler: ErrorHandlerService,
     private readonly manager: ManagerService
   ) {}
 
@@ -43,21 +49,22 @@ export class SubmissionListComponent implements OnInit {
     this.router.navigate(['questions', question]);
   }
 
-  ngOnInit() {
-    let filters: Filter[] = [];
-    if (this.question) {
-      filters.push(
-        this.manager.create(new Filter(), {
-          field: 'questionId',
-          value: this.question
-        })
-      );
-    }
+  fetchPage(page: number) {
     this.manager
       .getSubmissions(
         this.manager.create(new GetSubmissionsRequest(), {
-          filtersList: filters
-        })
+          filtersList: [
+            this.manager.create(new Filter(), {
+              field: 'page',
+              value: `${page}`
+            }),
+            this.manager.create(new Filter(), {
+              field: this.filterType,
+              value: this.filterValue
+            })
+          ]
+        }),
+        this.manager.getToken()
       )
       .then(res => {
         this.submissions = res.getSubmissionsList().map(value => {
@@ -67,7 +74,10 @@ export class SubmissionListComponent implements OnInit {
           ];
           return val as Submission.AsObject;
         });
+        this.totalPageCount = res.getTotalPageSize();
       })
-      .catch(err => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
   }
 }

@@ -1,11 +1,17 @@
 import { Injectable } from '@angular/core';
 import { ManagerClient } from './proto/ServicesServiceClientPb';
+import { CookieService } from './cookie.service';
+import { Metadata } from 'grpc-web';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ManagerService extends ManagerClient {
-  constructor() {
+  constructor(
+    private readonly router: Router,
+    private readonly cookie: CookieService
+  ) {
     super('/api');
   }
 
@@ -16,5 +22,17 @@ export class ManagerService extends ManagerClient {
       );
     }
     return t;
+  }
+
+  getToken(): Metadata {
+    return {
+      authorization: `Bearer ${this.cookie.getCookie('token')}`
+    };
+  }
+
+  reload() {
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate([this.router.url]);
+    });
   }
 }

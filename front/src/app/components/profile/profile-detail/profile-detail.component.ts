@@ -7,6 +7,7 @@ import {
   ID,
   Role
 } from '../../../services/proto/services_pb';
+import { ErrorHandlerService } from '../../../services/error-handler.service';
 
 @Component({
   selector: 'app-profile-detail',
@@ -25,7 +26,10 @@ export class ProfileDetailComponent implements OnInit {
   @Input({ required: true })
   username!: string;
 
-  stats!: GetStatsResponse.AsObject;
+  stats: GetStatsResponse.AsObject = {
+    solvedQuestions: 0,
+    triedQuestions: 0
+  };
   role!: Role;
   canChange: boolean = false;
 
@@ -52,39 +56,51 @@ export class ProfileDetailComponent implements OnInit {
     }
   };
 
-  constructor(private readonly manager: ManagerService) {}
+  constructor(
+    private readonly errHandler: ErrorHandlerService,
+    private readonly manager: ManagerService
+  ) {}
 
   ngOnInit() {
     this.manager
       .getProfile(
         this.manager.create(new ID(), {
           value: this.username
-        })
+        }),
+        this.manager.getToken()
       )
       .then(res => {
         this.role = res.getRole();
       })
-      .catch(err => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
     this.manager
       .getProfile(
         this.manager.create(new ID(), {
           value: ''
-        })
+        }),
+        this.manager.getToken()
       )
       .then(res => {
         this.canChange = res.getRole() > this.role;
       })
-      .catch(err => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
     this.manager
       .getStatsRequest(
         this.manager.create(new ID(), {
           value: this.username
-        })
+        }),
+        this.manager.getToken()
       )
       .then(res => {
         this.stats = res.toObject();
       })
-      .catch(err => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
   }
 
   changeRole() {
@@ -95,6 +111,11 @@ export class ProfileDetailComponent implements OnInit {
           role: 3 - this.role
         })
       )
-      .catch(err => {});
+      .then(() => {
+        this.manager.reload();
+      })
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
   }
 }

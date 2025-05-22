@@ -6,8 +6,10 @@
 <ng-template #table>
   <app-table
     (click)="gotoProfile($event.row.username)"
+    (pageChange)="fetchPage($event)"
     [columns]="['Username']"
     [data]="profiles"
+    [totalPages]="totalPageCount"
   >
   </app-table>
 </ng-template>

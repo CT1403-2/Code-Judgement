@@ -9,5 +9,8 @@
   <app-profile-detail [username]="username"></app-profile-detail>
 </ng-template>
 <ng-template #submissions>
-  <app-submission-list></app-submission-list>
+  <app-submission-list
+    filterType="username"
+    [filterValue]="username"
+  ></app-submission-list>
 </ng-template>

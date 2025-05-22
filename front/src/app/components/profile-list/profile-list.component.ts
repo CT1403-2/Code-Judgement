@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
-import { GetProfilesRequest, ID } from '../../services/proto/services_pb';
-import * as grpcWeb from 'grpc-web';
+import {
+  Filter,
+  GetProfilesRequest,
+  ID
+} from '../../services/proto/services_pb';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-profile-list',
@@ -13,9 +17,11 @@ import * as grpcWeb from 'grpc-web';
 export class ProfileListComponent implements OnInit {
   currentUser!: string;
   profiles!: { username: string }[];
+  totalPageCount!: number;
 
   constructor(
     private readonly router: Router,
+    private readonly errHandler: ErrorHandlerService,
     private readonly manager: ManagerService
   ) {}
 
@@ -34,28 +40,37 @@ export class ProfileListComponent implements OnInit {
       .getProfile(
         this.manager.create(new ID(), {
           value: ''
-        })
+        }),
+        this.manager.getToken()
       )
       .then(res => {
         this.currentUser = res.getUsername();
       })
-      .catch((err: grpcWeb.RpcError) => {
-        if (err.code == grpcWeb.StatusCode.UNAUTHENTICATED) {
-          this.router.navigate(['']);
-        }
+      .catch(err => {
+        this.errHandler.handleError(err);
       });
+  }
+
+  fetchPage(page: number) {
     this.manager
       .getProfiles(
         this.manager.create(new GetProfilesRequest(), {
-          filtersList: []
+          filtersList: [
+            this.manager.create(new Filter(), {
+              field: 'page',
+              value: `${page}`
+            })
+          ]
         })
       )
       .then(res => {
         this.profiles = res.getUsernamesList().map(user => {
           return { username: user };
         });
+        this.totalPageCount = res.getTotalPageSize();
       })
       .catch(err => {
+        this.errHandler.handleError(err);
       });
   }
 }

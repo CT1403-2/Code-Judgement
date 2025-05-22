@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
-  selector: 'app-error',
+  selector: 'app-error-page',
   standalone: false,
-  templateUrl: './error.component.html',
-  styleUrl: './error.component.css'
+  templateUrl: './error-page.component.html',
+  styleUrl: './error-page.component.css'
 })
-export class ErrorComponent implements OnInit {
+export class ErrorPageComponent implements OnInit {
   code!: number;
 
   messages: { [key: number]: string } = {

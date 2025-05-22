@@ -1,7 +1,12 @@
 import { Component } from '@angular/core';
 import { ManagerService } from '../../services/manager.service';
 import { CookieService } from '../../services/cookie.service';
-import { AuthenticationRequest } from '../../services/proto/services_pb';
+import {
+  AuthenticationRequest,
+  AuthenticationResponse
+} from '../../services/proto/services_pb';
+import { Router } from '@angular/router';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-login',
@@ -14,41 +19,45 @@ export class LoginComponent {
   password: string = '';
 
   constructor(
-    private readonly manager: ManagerService,
-    private readonly cookie: CookieService
+    private readonly router: Router,
+    private readonly cookie: CookieService,
+    private readonly errHandler: ErrorHandlerService,
+    private readonly manager: ManagerService
   ) {}
 
   login(): void {
-    this.manager
-      .login(
+    this.handleAuth(
+      this.manager.login(
         this.manager.create(new AuthenticationRequest(), {
           username: this.username,
           password: this.password
         })
       )
-      .then(res => {
-        let date = new Date();
-        date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
-        this.cookie.setCookie('token', res.getValue(), date);
-        this.cookie.setCookie('role', `${res.getRole()}`, date);
-      })
-      .catch(err => {});
+    );
   }
 
   signup(): void {
-    this.manager
-      .register(
+    this.handleAuth(
+      this.manager.register(
         this.manager.create(new AuthenticationRequest(), {
           username: this.username,
           password: this.password
         })
       )
+    );
+  }
+
+  handleAuth(authRes: Promise<AuthenticationResponse>) {
+    authRes
       .then(res => {
         let date = new Date();
         date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
         this.cookie.setCookie('token', res.getValue(), date);
         this.cookie.setCookie('role', `${res.getRole()}`, date);
+        this.router.navigate(['questions']);
       })
-      .catch(err => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
   }
 }

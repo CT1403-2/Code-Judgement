@@ -7,7 +7,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let row of paginatedData">
+      <tr *ngFor="let row of data">
         <td
           (click)="click.emit({ row: row, column: column })"
           *ngFor="let column of columns"
@@ -22,11 +22,11 @@
   </table>
 
   <div class="pagination">
-    <button (click)="previousPage()" [disabled]="currentPage === 1">
+    <button (click)="previousPage()" [disabled]="currentPage <= 1">
       Previous
     </button>
     <span>Page {{ currentPage }} of {{ totalPages }}</span>
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+    <button (click)="nextPage()" [disabled]="currentPage >= totalPages">
       Next
     </button>
   </div>
