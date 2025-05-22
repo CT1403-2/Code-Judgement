@@ -28,8 +28,16 @@ export class ErrorHandlerService {
   handleError(err: any) {
     if (err instanceof grpcWeb.RpcError) {
       this.showError(err.message).then(() => {
-        if (err.code === grpcWeb.StatusCode.UNAUTHENTICATED) {
-          this.router.navigate(['']);
+        switch (err.code) {
+          case grpcWeb.StatusCode.UNAUTHENTICATED:
+            this.router.navigate(['']);
+            break;
+          case grpcWeb.StatusCode.PERMISSION_DENIED:
+            this.router.navigate(['error', '403']);
+            break;;
+          case grpcWeb.StatusCode.NOT_FOUND:
+            this.router.navigate(['error', '40r']);
+            break;
         }
       });
     }
