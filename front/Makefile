@@ -1,5 +1,5 @@
 dependencies:
-	npm install
+	npm install --force
 
 	@if command -v protoc >/dev/null 2>&1; then \
 		echo "">/dev/null; \
@@ -20,5 +20,5 @@ generate:
     --js_out=import_style=commonjs,binary:./src/app/services/proto \
     --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/app/services/proto
 
-build:
+build: generate
 	ng build --output-path ../build --configuration production
