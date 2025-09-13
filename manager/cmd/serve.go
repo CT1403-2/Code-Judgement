@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"path/filepath"
+
 	"github.com/CT1403-2/Code-Judgement/manager/internal/manager"
 	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/soheilhy/cmux"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
-	"log"
-	"net"
-	"net/http"
-	"os"
-	"path/filepath"
 )
 
 var serveCmd = &cobra.Command{
@@ -63,12 +64,12 @@ func server(port string) error {
 				wrappedGrpc.ServeHTTP(resp, req)
 				return
 			}
-			filePath := filepath.Join("browser/build", req.URL.Path)
+			filePath := filepath.Join("build/browser", req.URL.Path)
 			if _, err := os.Stat(filePath); err == nil {
 				http.ServeFile(resp, req, filePath)
 				return
 			}
-			http.ServeFile(resp, req, "browser/build/index.html")
+			http.ServeFile(resp, req, "build/browser/index.html")
 		}),
 	}
 

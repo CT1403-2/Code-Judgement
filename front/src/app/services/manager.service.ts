@@ -12,7 +12,7 @@ export class ManagerService extends ManagerClient {
     private readonly router: Router,
     private readonly cookie: CookieService
   ) {
-    super('/api');
+    super('');
   }
 
   create<T>(t: T, properties: Record<string, any>): T {
