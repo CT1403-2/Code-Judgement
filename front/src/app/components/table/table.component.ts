@@ -4,7 +4,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
   selector: 'app-table',
   standalone: false,
   templateUrl: './table.component.html',
-  styleUrl: './table.component.css',
+  styleUrl: './table.component.css'
 })
 export class TableComponent<T> implements OnInit {
   @Input({ required: true })
@@ -13,8 +13,8 @@ export class TableComponent<T> implements OnInit {
   @Input({ required: true })
   columns!: string[];
 
-  @Input()
-  pageSize: number = 5;
+  @Input({ required: true })
+  totalPages!: number;
 
   @Input()
   actionIcon?: string;
@@ -25,19 +25,17 @@ export class TableComponent<T> implements OnInit {
   @Output()
   action = new EventEmitter<T>();
 
+  @Output()
+  pageChange = new EventEmitter<number>();
+
   currentPage: number = 1;
-  totalPages: number = 1;
-  paginatedData: any[] = [];
 
   ngOnInit(): void {
     this.updatePagination();
   }
 
   updatePagination(): void {
-    this.totalPages = Math.ceil(this.data.length / this.pageSize);
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedData = this.data.slice(startIndex, endIndex);
+    this.pageChange.emit(this.currentPage);
   }
 
   nextPage(): void {
@@ -58,7 +56,7 @@ export class TableComponent<T> implements OnInit {
     const anyRow = row as any;
     const field = column
       .replace(/\s+/g, '')
-      .replace(/^./, (match) => match.toLowerCase());
+      .replace(/^./, match => match.toLowerCase());
     if (anyRow[`${field}Title`]) {
       return anyRow[`${field}Title`];
     } else {

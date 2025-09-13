@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"manger/internal"
+	"github.com/CT1403-2/Code-Judgement/manager/internal"
 )
 
 const (

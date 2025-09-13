@@ -1,6 +1,10 @@
 <app-table
   (click)="gotoQuestion($event.row.id)"
+  (pageChange)="fetchPage($event)"
+  (action)="action.emit($event)"
   [columns]="['Id', 'Title', 'State']"
   [data]="questions"
+  [totalPages]="totalPageCount"
+  [actionIcon]="filterOwner ? 'pen' : canChange ? 'arrow-repeat' : undefined"
 >
 </app-table>

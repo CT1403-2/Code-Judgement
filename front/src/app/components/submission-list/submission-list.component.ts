@@ -1,15 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Filter, Submission, SubmissionState } from '../../services/services';
+import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
+import {
+  Filter,
+  GetSubmissionsRequest,
+  Submission,
+  SubmissionState
+} from '../../services/proto/services_pb';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-submission-list',
   standalone: false,
   templateUrl: './submission-list.component.html',
-  styleUrl: './submission-list.component.css',
+  styleUrl: './submission-list.component.css'
 })
-export class SubmissionListComponent implements OnInit {
+export class SubmissionListComponent {
   stateTitles: { [key in SubmissionState]?: string } = {
     [SubmissionState.SUBMISSION_STATE_UNKNOWN]: 'Unknown',
     [SubmissionState.SUBMISSION_STATE_PENDING]: 'Pending',
@@ -21,42 +27,57 @@ export class SubmissionListComponent implements OnInit {
       'Memory Limit Exceeded',
     [SubmissionState.SUBMISSION_STATE_TIME_LIMIT_EXCEEDED]:
       'Time Limit Exceeded',
-    [SubmissionState.SUBMISSION_STATE_RUNTIME_ERROR]: 'Runtime Error',
+    [SubmissionState.SUBMISSION_STATE_RUNTIME_ERROR]: 'Runtime Error'
   };
 
-  submissions!: Submission[];
+  submissions!: Submission.AsObject[];
+  totalPageCount!: number;
 
-  @Input()
-  question?: string;
+  @Input({ required: true })
+  filterType!: 'questionId' | 'username';
+
+  @Input({ required: true })
+  filterValue!: string;
 
   constructor(
     private readonly router: Router,
-    private readonly manager: ManagerService,
+    private readonly errHandler: ErrorHandlerService,
+    private readonly manager: ManagerService
   ) {}
 
   gotoQuestion(question?: string) {
     this.router.navigate(['questions', question]);
   }
 
-  ngOnInit() {
-    let filters: Filter[] = [];
-    if (this.question) {
-      filters.push({
-        field: 'questionId',
-        value: this.question,
-      });
-    }
+  fetchPage(page: number) {
     this.manager
-      .GetSubmissions({
-        filters: filters,
-      })
-      .then((res) => {
-        this.submissions = res.submissions.map((value) => {
-          let val = value as any;
-          val.stateTitle = this.stateTitles[value.state ?? 0];
-          return val as Submission;
+      .getSubmissions(
+        this.manager.create(new GetSubmissionsRequest(), {
+          filtersList: [
+            this.manager.create(new Filter(), {
+              field: 'page',
+              value: `${page}`
+            }),
+            this.manager.create(new Filter(), {
+              field: this.filterType,
+              value: this.filterValue
+            })
+          ]
+        }),
+        this.manager.getToken()
+      )
+      .then(res => {
+        this.submissions = res.getSubmissionsList().map(value => {
+          let val = value.toObject() as any;
+          val.stateTitle = this.stateTitles[
+            value.hasState() ? value.getState() : 0
+          ];
+          return val as Submission.AsObject;
         });
+        this.totalPageCount = res.getTotalPageSize();
       })
-      .catch((err) => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
   }
 }

@@ -42,4 +42,4 @@ testem.log
 Thumbs.db
 
 # proto
-src/app/services/services.ts
+src/app/services/proto/

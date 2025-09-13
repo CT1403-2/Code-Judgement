@@ -1,6 +1,6 @@
 <div class="login-container">
   <h2>Login/Sing up</h2>
-  <form>
+  <form #loginForm="ngForm">
     <div class="form-group">
       <label for="username">Username</label>
       <input
@@ -9,6 +9,8 @@
         name="username"
         required
         type="text"
+        [minLength]="4"
+        [(ngModel)]="username"
       />
     </div>
     <div class="form-group">
@@ -19,9 +21,23 @@
         name="password"
         required
         type="password"
+        [minLength]="8"
+        [(ngModel)]="password"
       />
     </div>
-    <button class="btn btn-primary">Login</button>
-    <button class="btn btn-success">Sign up</button>
+    <button
+      class="btn btn-primary"
+      (click)="login()"
+      [disabled]="loginForm.invalid"
+    >
+      Login
+    </button>
+    <button
+      class="btn btn-success"
+      (click)="signup()"
+      [disabled]="loginForm.invalid"
+    >
+      Sign up
+    </button>
   </form>
 </div>

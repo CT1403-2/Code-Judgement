@@ -5,7 +5,7 @@ import { QuestionPageComponent } from './components/question-page/question-page.
 import { QuestionComponent } from './components/question/question.component';
 import { ProfileListComponent } from './components/profile-list/profile-list.component';
 import { ProfileComponent } from './components/profile/profile.component';
-import { ErrorComponent } from './components/error/error.component';
+import { ErrorPageComponent } from './components/error-page/error-page.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -13,12 +13,12 @@ const routes: Routes = [
   { path: 'questions/:id', component: QuestionComponent },
   { path: 'profiles', component: ProfileListComponent },
   { path: 'profiles/:id', component: ProfileComponent },
-  { path: 'error/:id', component: ErrorComponent },
-  { path: '**', redirectTo: '/error/404' },
+  { path: 'error/:id', component: ErrorPageComponent },
+  { path: '**', redirectTo: '/error/404' }
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
+  exports: [RouterModule]
 })
 export class AppRoutingModule {}

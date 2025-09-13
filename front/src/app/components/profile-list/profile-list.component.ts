@@ -1,20 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
+import {
+  Filter,
+  GetProfilesRequest,
+  ID
+} from '../../services/proto/services_pb';
+import { ErrorHandlerService } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-profile-list',
   standalone: false,
   templateUrl: './profile-list.component.html',
-  styleUrl: './profile-list.component.css',
+  styleUrl: './profile-list.component.css'
 })
 export class ProfileListComponent implements OnInit {
   currentUser!: string;
   profiles!: { username: string }[];
+  totalPageCount!: number;
 
   constructor(
     private readonly router: Router,
-    private readonly manager: ManagerService,
+    private readonly errHandler: ErrorHandlerService,
+    private readonly manager: ManagerService
   ) {}
 
   gotoMyProfile(tab: number) {
@@ -29,22 +37,40 @@ export class ProfileListComponent implements OnInit {
 
   ngOnInit() {
     this.manager
-      .GetProfile({
-        value: '',
+      .getProfile(
+        this.manager.create(new ID(), {
+          value: ''
+        }),
+        this.manager.getToken()
+      )
+      .then(res => {
+        this.currentUser = res.getUsername();
       })
-      .then((res) => {
-        this.currentUser = res.username;
-      })
-      .catch((err) => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
+  }
+
+  fetchPage(page: number) {
     this.manager
-      .GetProfiles({
-        filters: [],
-      })
-      .then((res) => {
-        this.profiles = res.usernames.map((user) => {
+      .getProfiles(
+        this.manager.create(new GetProfilesRequest(), {
+          filtersList: [
+            this.manager.create(new Filter(), {
+              field: 'page',
+              value: `${page}`
+            })
+          ]
+        })
+      )
+      .then(res => {
+        this.profiles = res.getUsernamesList().map(user => {
           return { username: user };
         });
+        this.totalPageCount = res.getTotalPageSize();
       })
-      .catch((err) => {});
+      .catch(err => {
+        this.errHandler.handleError(err);
+      });
   }
 }

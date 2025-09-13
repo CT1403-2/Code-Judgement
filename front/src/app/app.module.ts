@@ -18,7 +18,8 @@ import { ProfileDetailComponent } from './components/profile/profile-detail/prof
 import { QuestionDetailComponent } from './components/question/question-detail/question-detail.component';
 import { SubmissionListComponent } from './components/submission-list/submission-list.component';
 import { TableComponent } from './components/table/table.component';
-import { ErrorComponent } from './components/error/error.component';
+import { ErrorPageComponent } from './components/error-page/error-page.component';
+import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 
 @NgModule({
   declarations: [
@@ -36,10 +37,11 @@ import { ErrorComponent } from './components/error/error.component';
     QuestionDetailComponent,
     SubmissionListComponent,
     TableComponent,
-    ErrorComponent,
+    ErrorPageComponent,
+    ErrorDialogComponent
   ],
   imports: [BrowserModule, FormsModule, NgChartjsModule, AppRoutingModule],
   providers: [],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
 export class AppModule {}

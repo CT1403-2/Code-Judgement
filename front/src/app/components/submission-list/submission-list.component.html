@@ -1,6 +1,8 @@
 <app-table
   (click)="gotoQuestion($event.row.questionId)"
+  (pageChange)="fetchPage($event)"
   [columns]="['Id', 'Question Id', 'State']"
   [data]="submissions"
+  [totalPages]="totalPageCount"
 >
 </app-table>
