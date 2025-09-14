@@ -6,10 +6,16 @@ import (
 	"github.com/CT1403-2/Code-Judgement/judge/internal/runner"
 	"github.com/CT1403-2/Code-Judgement/proto"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/metadata"
 	"os"
 	"time"
 
 	"github.com/CT1403-2/Code-Judgement/judge/config"
+)
+
+const (
+	authHeader      = "Authorization"
+	authHeaderValue = "Token 1B926F9E3BF33C879DDBC77D9B679"
 )
 
 type controller struct {
@@ -38,8 +44,15 @@ func (c *controller) judgePendingSubmissions(ctx context.Context) {
 		default:
 			time.Sleep(10 * time.Millisecond)
 			ctxWithTimeout, cancel := context.WithTimeout(ctx, c.config.Manager.Timeout)
+
+			md := metadata.New(map[string]string{
+				authHeader: authHeaderValue,
+			})
+			ctxWithAuth := metadata.NewOutgoingContext(ctxWithTimeout, md)
+
 			pendingState := proto.SubmissionState_SUBMISSION_STATE_PENDING.String()
-			submissions, err := c.client.GetSubmissions(ctxWithTimeout, &proto.GetSubmissionsRequest{Filters: []*proto.Filter{{Field: "state", Value: pendingState}}})
+
+			submissions, err := c.client.GetSubmissions(ctxWithAuth, &proto.GetSubmissionsRequest{Filters: []*proto.Filter{{Field: "state", Value: pendingState}}})
 			if err != nil {
 				logrus.WithError(err).Error("couldn't get submissions")
 			}
@@ -61,14 +74,19 @@ func (c *controller) judgeSubmission(ctx context.Context, submission *proto.Subm
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, c.config.Manager.Timeout)
 	defer cancel()
 
-	response, err := c.client.GetQuestion(ctxWithTimeout, &proto.ID{Value: submission.QuestionId})
+	md := metadata.New(map[string]string{
+		authHeader: authHeaderValue,
+	})
+	ctxWithAuth := metadata.NewOutgoingContext(ctxWithTimeout, md)
+
+	response, err := c.client.GetQuestion(ctxWithAuth, &proto.ID{Value: submission.QuestionId})
 	if err != nil {
 		return fmt.Errorf("failed to judge submission:\n %w", err)
 	}
 
 	state := proto.SubmissionState_SUBMISSION_STATE_JUDGING
 	submission.State = &state
-	_, err = c.client.UpdateSubmission(ctxWithTimeout, submission)
+	_, err = c.client.UpdateSubmission(ctxWithAuth, submission)
 	if err != nil {
 		return fmt.Errorf("failed to judge submission:\n %w", err)
 	}
@@ -80,7 +98,7 @@ func (c *controller) judgeSubmission(ctx context.Context, submission *proto.Subm
 	}
 
 	submission.State = updatedState
-	_, err = c.client.UpdateSubmission(ctxWithTimeout, submission)
+	_, err = c.client.UpdateSubmission(ctxWithAuth, submission)
 	if err != nil {
 		return fmt.Errorf("failed to judge submission:\n %w", err)
 	}
