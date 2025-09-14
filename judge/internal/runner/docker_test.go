@@ -38,7 +38,7 @@ func (s *DockerRunnerSuite) SetupSuite() {
 
 	s.config = &config.Config{
 		Runner: config.RunnerConfig{
-			Image: "runner:v0.0.10",
+			Image: "runner:v0.0.7",
 		},
 	}
 }

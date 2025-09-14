@@ -1,6 +1,6 @@
 manager:
   address: "localhost:8000"
-  timeout: 2s
+  timeout: 20s
 
 runner:
   image: "runner:v0.0.7"
