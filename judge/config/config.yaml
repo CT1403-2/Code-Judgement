@@ -1,5 +1,5 @@
 manager:
-  address: "manager:8000"
+  address: "localhost:8000"
   timeout: 2s
 
 runner:
